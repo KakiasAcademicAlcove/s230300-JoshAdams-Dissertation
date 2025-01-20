@@ -1,0 +1,119 @@
+variables:
+  PACKER_LOG: 1
+  PACKER_LOG_PATH: "packerlog.txt"
+  SKIP_KICKSTART: "true"
+
+stages:
+  - base
+  - build
+  - test
+  - deploy
+
+cache: &global_cache
+    key: $CI_PROJECT_NAME
+    paths:
+        - artifacts/
+
+base-build:
+  stage: base
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/base/build-vars.json image-builds/base/base.build.pkr.hcl
+  when: manual
+  artifacts: 
+    when: always
+    path: $PACKER_LOG_PATH
+
+base-test:
+  stage: base
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/base/build-vars.json image-builds/base/base.test.pkr.hcl
+
+elk-build:
+  stage: build
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/elk/build-vars.json image-builds/elk/elk.build.pkr.hcl
+  needs:
+    - job: base-image
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+kafka-build:
+  stage: build
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/kafka/build-vars.json image-builds/kafka/kafka.build.pkr.hcl
+  needs:
+    - job: base-image
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+user-build:
+  stage: build
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/user/build-vars.json image-builds/user/user.build.pkr.hcl
+  needs:
+    - job: base-image
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+elk-test:
+  stage: test
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/elk/build-vars.json image-builds/elk/elk.test.pkr.hcl
+  needs:
+    - job: elk-build
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+kafka-test:
+  stage: test
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/kafka/build-vars.json image-builds/kafka/kafka.test.pkr.hcl
+  needs:
+    - job: kafka-build
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+user-test:
+  stage: test
+  script:
+    - PACKER_LOG=1 packer build -var-file=image-builds/user/build-vars.json image-builds/user/user.test.pkr.hcl
+  needs:
+    - job: user-build
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+elk-deploy:
+  stage: deploy
+  script:
+    - 
+  needs:
+    - job: elk-test
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+kafka-deploy:
+  stage: deploy
+  script:
+    - 
+  needs:
+    - job: kafka-test
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
+
+user-deploy:
+  stage: deploy
+  script:
+    - 
+  needs:
+    - job: user-test
+  artifacts:
+    when: always
+    path: $PACKER_LOG_PATH
