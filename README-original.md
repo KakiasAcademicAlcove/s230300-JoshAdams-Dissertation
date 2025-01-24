@@ -1,8 +1,8 @@
-# A Proof-of-Concept system and application provisioning and monitoring stack using a DevOps / Infrastructure-as-Code approach  s230300-JoshAdams-Dissertation
+# [change to project title] s230300-JoshAdams-Dissertation
 
 # 1. Project Overview
-   - **Purpose**: This project will aim to create a virtual machine provisioning workflow with a data pipeline for monitoring.
-   - **Key Points**: When provisioning machines for users and systems, it can be hard to maintain consistency across an inventory as well as system reliability across the estate. This project will aim to create a robust and automated approach to system and application provisioning, including a comprehensive InSpec testing framework, and will ensure consistency through system provisioning with IaC.
+   - **Purpose**: Provide a brief overview of the project, its objectives, and the expected outcomes.
+   - **Key Points**: Highlight the main aspects of the project, including the problem it addresses, the proposed solution, and the benefits.
 
 ## 1.2 Project Background
    - **Context**: Describe the background and context of the project, including any relevant history or previous work.
@@ -16,7 +16,7 @@
 
 # 2. Methodologies
    - **Approach**: Describe the overall approach and methodology that will be used to complete the project.
-   - **Tools and Technologies**: Docker / Kubernetes (virtualisation), Chef Infra (DevOps), Terraform (IaC), ELK (data pipelining, log and metric management), Apache Kafka (real-time data streaming), Git (version control and CI/CD), Apache Spark (data processing)
+   - **Tools and Technologies**: List the tools, technologies, and frameworks that will be utilized.
    - **Development Process**: Outline the development process, including phases such as requirements gathering, design, development, testing, and deployment.
 
 # 3. Project Planning
