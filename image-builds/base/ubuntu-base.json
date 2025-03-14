@@ -1,0 +1,30 @@
+{
+    "builders": [
+      {
+        "type": "docker",
+        "image": "ubuntu:latest",
+        "commit": true
+      }
+    ],
+    "provisioners": [
+      {
+        "type": "shell",
+        "inline": [
+            "apt-get update",
+            "apt-get install -y curl vim git passwd zsh", 
+            "mkdir /apps",
+            "useradd -m -d /home/sysuser -s /bin/bash sysuser",
+            "echo 'sysuser:password' | chpasswd",  
+            "usermod -s /bin/zsh sysuser",     
+            "chown -R sysuser:sysuser /home/sysuser"  
+        ]
+      }
+    ],
+    "post-processors": [
+        {
+          "type": "docker-tag",
+          "repository": "ubuntu-base",
+          "tag": "latest"
+        }
+    ]
+}

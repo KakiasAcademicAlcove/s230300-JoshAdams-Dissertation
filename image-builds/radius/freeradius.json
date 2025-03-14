@@ -1,0 +1,30 @@
+{
+    "builders": [
+      {
+        "type": "docker",
+        "image": "ubuntu-base:latest",
+        "commit": true
+      }
+    ],
+    "provisioners": [
+      {
+        "type": "shell",
+        "inline": [
+            "apt-get update",
+            "apt-get install -y mysql-server freeradius freeradius-mysql freeradius-utils",
+            "useradd -m -d /home/freeradiususer -s /bin/bash freeradiususer",
+            "echo 'freeradiususer:password' | chpasswd",  
+            "usermod -s /bin/zsh freeradiususer",     
+            "chown -R freeradiususer:freeradiususer /home/freeradiususer",
+            "mkdir -p /apps/opt/freeradius"
+        ]
+      }
+    ],
+    "post-processors": [
+        {
+          "type": "docker-tag",
+          "repository": "freeradius",
+          "tag": "latest"
+        }
+    ]
+}
