@@ -10,7 +10,11 @@
       {
         "type": "shell",
         "inline": [
+            "export DEBIAN_FRONTEND=noninteractive",
+            "ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime",
             "apt-get update",
+            "apt-get install -y tzdata",
+            "dpkg-reconfigure --frontend noninteractive tzdata",
             "apt-get install -y curl vim git passwd zsh", 
             "mkdir /apps",
             "useradd -m -d /home/sysuser -s /bin/bash sysuser",
