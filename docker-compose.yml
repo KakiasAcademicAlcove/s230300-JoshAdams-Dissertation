@@ -29,6 +29,7 @@ services:
       - "3813:1813/udp"
 
   logstash:
+    build: ./logstash
     image: logstash:8.17.3
     container_name: logstash
     volumes:
@@ -38,14 +39,12 @@ services:
       - freeradius3_logs:/var/log/freeradius3:ro
     ports:
       - "5044:5044"
-    environment:
-      - LOGSTASH_JAVA_OPTS="-Xmx1g -Xms1g"
-      - xpack.monitoring.enabled=false
     networks:
       - kafka_network
       - elastic_network
 
   kafka-node-1:
+    build: ./kafka
     image: apache/kafka:latest
     container_name: kafka-node-1
     networks:
@@ -73,6 +72,7 @@ services:
       - kafka-data-1:/var/lib/kafka
 
   kafka-node-2:
+    build: ./kafka
     image: apache/kafka:latest
     container_name: kafka-node-2
     networks:
@@ -100,6 +100,7 @@ services:
       - kafka-data-2:/var/lib/kafka
 
   elasticsearch:
+    build: ./elasticsearch
     image: elasticsearch:8.17.3
     container_name: elasticsearch
     environment:
@@ -113,19 +114,20 @@ services:
     networks:
       - elastic_network
   
-  # kibana:
-  #   image: kibana:8.17.3
-  #   container_name: kibana
-  #   environment:
-  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-  #   volumes:
-  #     - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
-  #   ports:
-  #     - "5601:5601"
-  #   networks:
-  #     - elastic_network
-  #   depends_on:
-  #     - elasticsearch
+  kibana:
+    build: ./kibana
+    image: kibana:8.17.3
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - "5601:5601"
+    networks:
+      - elastic_network
+    depends_on:
+      - elasticsearch
 
 volumes:
   freeradius1_logs:

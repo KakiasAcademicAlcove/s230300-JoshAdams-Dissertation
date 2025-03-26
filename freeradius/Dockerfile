@@ -1,10 +1,15 @@
+# Start from the official FreeRADIUS image
 FROM freeradius/freeradius-server:latest
 
-# Install Chef (Omnibus installer)
-RUN apt-get update && apt-get install -y curl
-RUN curl -L https://omnitruck.chef.io/install.sh | bash
+# Install Chef
+RUN apt-get update && apt-get install -y curl && \
+    curl -L https://omnitruck.chef.io/install.sh | bash
 
-# Expose necessary ports
+# Create cookbooks directory
+RUN mkdir -p /opt/chef/cookbooks
+
+# Expose FreeRADIUS ports
 EXPOSE 1812/udp 1813/udp
 
+# Run FreeRADIUS in debug mode
 CMD ["freeradius", "-X"]
