@@ -1,0 +1,1 @@
+# curl vim git passwd zsh tzdata
