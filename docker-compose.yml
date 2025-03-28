@@ -8,8 +8,6 @@ services:
     volumes:
       - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
       - ./freeradius/users:/etc/freeradius/users
-      # - ./freeradius/mods-available/detail:/etc/freeradius/mods-available/detail
-      # - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
       - freeradius1_logs:/var/log/freeradius
     ports:
       - "1812:1812/udp"
@@ -21,8 +19,6 @@ services:
     volumes:
       - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
       - ./freeradius/users:/etc/freeradius/users
-      # - ./freeradius/mods-available/detail:/etc/freeradius/mods-available/detail
-      # - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
       - freeradius2_logs:/var/log/freeradius
     ports:
       - "2812:1812/udp"
@@ -34,8 +30,6 @@ services:
     volumes:
       - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
       - ./freeradius/users:/etc/freeradius/users
-      # - ./freeradius/mods-available/detail:/etc/freeradius/mods-available/detail
-      # - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
       - freeradius3_logs:/var/log/freeradius
     ports:
       - "3812:1812/udp"
@@ -46,7 +40,6 @@ services:
     image: logstash:8.17.3
     container_name: logstash
     volumes:
-      # - logstash_config:/usr/share/logstash/pipeline
       - freeradius1_logs:/var/log/freeradius1:ro
       - freeradius2_logs:/var/log/freeradius2:ro
       - freeradius3_logs:/var/log/freeradius3:ro
@@ -64,23 +57,16 @@ services:
       - kafka_network
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-node-1:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_LISTENER_NAMES: PLAINTEXT,CONTROLLER
-      KAFKA_LISTENER_PORT: 9092
-      KAFKA_LISTENER_HOST_NAME: kafka-node-1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-node-1:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-node-1:9093,2@kafka-node-2:9093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_ZOOKEEPER_CONNECT: ""  # KRaft mode does not need ZooKeeper
-      KAFKA_KRAFT_MODE: "true"  # Enable KRaft mode (no Zookeeper)
-      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
-      KAFKA_LOG_DIRS: /var/lib/kafka/logs
-      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     ports:
-      - "29092:9092"
+      - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
 
@@ -92,23 +78,16 @@ services:
       - kafka_network
     environment:
       KAFKA_NODE_ID: 2
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-node-2:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_LISTENER_NAMES: PLAINTEXT,CONTROLLER
-      KAFKA_LISTENER_PORT: 9092
-      KAFKA_LISTENER_HOST_NAME: kafka-node-2
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-node-2:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-node-1:9093,2@kafka-node-2:9093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_ZOOKEEPER_CONNECT: ""  # KRaft mode does not need ZooKeeper
-      KAFKA_KRAFT_MODE: "true"  # Enable KRaft mode (no Zookeeper)
-      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
-      KAFKA_LOG_DIRS: /var/lib/kafka/logs
-      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     ports:
-      - "39092:9092"
+      - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
 
