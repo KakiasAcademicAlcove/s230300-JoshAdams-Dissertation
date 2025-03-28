@@ -1,5 +1,7 @@
 FROM elasticsearch:8.17.3
 
+USER root
+
 # Install Chef 
 RUN apt-get update && apt-get install -y curl && \
     curl -L https://omnitruck.chef.io/install.sh | bash
@@ -15,11 +17,11 @@ ENV discovery.type=single-node \
 # Permissions for mounted data
 RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/data
 
-# Expose Elasticsearch port
-EXPOSE 9200
-
 # As Elasticsearch user
 USER elasticsearch
+
+# Expose Elasticsearch port
+EXPOSE 9200
 
 # Run Elasticsearch
 CMD ["bin/elasticsearch"]

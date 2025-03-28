@@ -1,1 +1,1 @@
-# curl vim git passwd zsh tzdata
+# Packages to install: curl vim git passwd zsh tzdata

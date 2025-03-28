@@ -1,5 +1,7 @@
 FROM kibana:8.17.3
 
+USER root
+
 # Install Chef
 RUN apt-get update && apt-get install -y curl && \
     curl -L https://omnitruck.chef.io/install.sh | bash

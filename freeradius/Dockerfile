@@ -12,4 +12,7 @@ RUN mkdir -p /opt/chef/cookbooks
 EXPOSE 1812/udp 1813/udp
 
 # Run FreeRADIUS in debug mode
-CMD ["freeradius", "-X"]
+# CMD ["freeradius", "-X"]
+# CMD ["freeradius", "-f"]
+
+ENTRYPOINT ["freeradius", "-f"]

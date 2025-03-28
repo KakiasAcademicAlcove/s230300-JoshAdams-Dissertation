@@ -1,6 +1,8 @@
 # Use the official Logstash image as the base
 FROM logstash:8.17.3
 
+USER root
+
 # Install Chef
 RUN apt-get update && apt-get install -y curl && \
     curl -L https://omnitruck.chef.io/install.sh | bash
@@ -13,10 +15,12 @@ ENV LOGSTASH_JAVA_OPTS="-Xmx1g -Xms1g"
 ENV XPACK_MONITORING_ENABLED="false"
 
 # Copy Logstash pipeline configurations -> this needs to be done by Chef in the long run
-COPY ./logstash/pipeline/ /usr/share/logstash/pipeline/
+# COPY ./logstash/pipeline/ /usr/share/logstash/pipeline/
 
 # Ensure correct permissions for pipeline configurations
 RUN chown -R logstash:logstash /usr/share/logstash/pipeline/
+
+USER logstash
 
 # Expose Logstash port
 EXPOSE 5044

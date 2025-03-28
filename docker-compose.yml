@@ -4,7 +4,12 @@ services:
   freeradius1:
     build: ./freeradius
     container_name: freeradius1
+    entrypoint: ["freeradius", "-f"]
     volumes:
+      - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
+      - ./freeradius/users:/etc/freeradius/users
+      # - ./freeradius/mods-available/detail:/etc/freeradius/mods-available/detail
+      # - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
       - freeradius1_logs:/var/log/freeradius
     ports:
       - "1812:1812/udp"
@@ -14,6 +19,10 @@ services:
     build: ./freeradius
     container_name: freeradius2
     volumes:
+      - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
+      - ./freeradius/users:/etc/freeradius/users
+      # - ./freeradius/mods-available/detail:/etc/freeradius/mods-available/detail
+      # - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
       - freeradius2_logs:/var/log/freeradius
     ports:
       - "2812:1812/udp"
@@ -23,6 +32,10 @@ services:
     build: ./freeradius
     container_name: freeradius3
     volumes:
+      - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
+      - ./freeradius/users:/etc/freeradius/users
+      # - ./freeradius/mods-available/detail:/etc/freeradius/mods-available/detail
+      # - ./freeradius/sites-enabled/default:/etc/freeradius/sites-enabled/default
       - freeradius3_logs:/var/log/freeradius
     ports:
       - "3812:1812/udp"
@@ -33,7 +46,7 @@ services:
     image: logstash:8.17.3
     container_name: logstash
     volumes:
-      - logstash_config:/usr/share/logstash/pipeline
+      # - logstash_config:/usr/share/logstash/pipeline
       - freeradius1_logs:/var/log/freeradius1:ro
       - freeradius2_logs:/var/log/freeradius2:ro
       - freeradius3_logs:/var/log/freeradius3:ro
