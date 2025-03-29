@@ -22,55 +22,55 @@ docker-compose:
 freeradius-chef:
   stage: chef
   script:
-    - docker exec -d freeradius1 chef-client -j /path/to/node/file  -E freeradius
-    - docker exec -d freeradius2 chef-client -j /path/to/node/file  -E freeradius
-    - docker exec -d freeradius3 chef-client -j /path/to/node/file  -E freeradius
+    - docker exec freeradius1 chef-client -j /path/to/node/file  -E freeradius
+    - docker exec freeradius2 chef-client -j /path/to/node/file  -E freeradius
+    - docker exec freeradius3 chef-client -j /path/to/node/file  -E freeradius
 
 logstash-chef:
   stage: chef
   script:
-    - docker exec -d logstash chef-client -j /path/to/node/file  -E logstash
+    - docker exec logstash chef-client -j /path/to/node/file  -E logstash
 
 kafka-chef:
   stage: chef
   script:
-    - docker exec -d kafka-node-1 chef-client -j /path/to/node/file  -E kafka
-    - docker exec -d kafka-node-2 chef-clienr -j /path/to/node/file -E kafka
+    - docker exec kafka-node-1 chef-client -j /path/to/node/file  -E kafka
+    - docker exec kafka-node-2 chef-client -j /path/to/node/file -E kafka
 
 elasticsearch-chef:
   stage: chef
   script:
-    - docker exec -d elasticsearch chef-clienr -j /path/to/node/file -E elasticsearch
+    - docker exec elasticsearch chef-client -j /path/to/node/file -E elasticsearch
 
 kibana-chef:
   stage: chef
   script:
-    - docker exec -d kibana chef-clienr -j /path/to/node/file -E kibana
+    - docker exec kibana chef-client -j /path/to/node/file -E kibana
 
 freeradius-inspec:
   stage: inspec
   script:
-    - docker exec -d freeradius1 inspect exec /path/to/inspec/profile -b
-    - docker exec -d freeradius2 inspect exec /path/to/inspec/profile -b
-    - docker exec -d freeradius3 inspect exec /path/to/inspec/profile -b
+    - docker exec freeradius1 inspec exec /path/to/inspec/profile -b
+    - docker exec freeradius2 inspec exec /path/to/inspec/profile -b
+    - docker exec freeradius3 inspec exec /path/to/inspec/profile -b
 
 logstash-inspec:
   stage: inspec
   script:
-    - - docker exec -d logstash inspect exec /path/to/inspec/profile -b
+    - - docker exec logstash inspec exec /path/to/inspec/profile -b
 
 kafka-inspec:
   stage: inspec
   script:
-    - docker exec -d kafka-node-1 inspect exec /path/to/inspec/profile -b
-    - docker exec -d kafka-node-2 inspect exec /path/to/inspec/profile -b
+    - docker exec kafka-node-1 inspec exec /path/to/inspec/profile -b
+    - docker exec kafka-node-2 inspec exec /path/to/inspec/profile -b
 
 elasticsearch-inspec:
   stage: inspec
   script:
-    - docker exec -d elasticsearch inspect exec /path/to/inspec/profile -b
+    - docker exec elasticsearch inspec exec /path/to/inspec/profile -b
 
 kibana-inspec:
   stage: inspec
   script:
-    - docker exec -d kibana inspect exec /path/to/inspec/profile -b
+    - docker exec kibana inspec exec /path/to/inspec/profile -b
