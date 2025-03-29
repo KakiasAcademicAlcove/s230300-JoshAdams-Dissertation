@@ -13,6 +13,7 @@ docker-compose up --build -d
 docker rm <container>
 docker system prune -af (clears cached containers)
 docker exec -it <container> /bin/bash (run a container)
+docker image prune
 
 # Run containers
 docker exec -it freeradius1 /bin/bash

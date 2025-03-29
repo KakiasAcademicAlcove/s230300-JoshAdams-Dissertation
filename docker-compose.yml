@@ -1,6 +1,19 @@
 version: "3.8"
 
 services:
+  # chef-server:
+  #   image: cbuisson/chef-server
+  #   container_name: chef-server
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   volumes:
+  #     - chef_data:/var/opt/opscode
+  #   environment:
+  #     - CHEF_SERVER_SECRET_KEY_PATH=/var/opt/opscode/private-chef-secrets
+  #   networks:
+  #     - chef_network
+
   freeradius1:
     build: ./freeradius
     container_name: freeradius1
@@ -12,6 +25,8 @@ services:
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
+    # networks:
+    #   - chef_network
 
   freeradius2:
     build: ./freeradius
@@ -23,6 +38,8 @@ services:
     ports:
       - "2812:1812/udp"
       - "2813:1813/udp"
+    # networks:
+    #   - chef_network
 
   freeradius3:
     build: ./freeradius
@@ -34,6 +51,8 @@ services:
     ports:
       - "3812:1812/udp"
       - "3813:1813/udp"
+    # networks:
+    #   - chef_network
 
   logstash:
     build: ./logstash
@@ -46,6 +65,7 @@ services:
     ports:
       - "5044:5044"
     networks:
+      # - chef_network
       - kafka_network
       - elastic_network
 
@@ -53,8 +73,6 @@ services:
     build: ./kafka
     image: apache/kafka:latest
     container_name: kafka-node-1
-    networks:
-      - kafka_network
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: controller,broker
@@ -69,13 +87,14 @@ services:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
+    networks:
+      # - chef_network
+      - kafka_network
 
   kafka-node-2:
     build: ./kafka
     image: apache/kafka:latest
     container_name: kafka-node-2
-    networks:
-      - kafka_network
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: controller,broker
@@ -90,6 +109,9 @@ services:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
+    networks:
+      # - chef_network
+      - kafka_network
 
   elasticsearch:
     build: ./elasticsearch
@@ -104,6 +126,7 @@ services:
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
+      # - chef_network
       - elastic_network
   
   kibana:
@@ -117,11 +140,13 @@ services:
     ports:
       - "5601:5601"
     networks:
+      # - chef_network
       - elastic_network
     depends_on:
       - elasticsearch
 
 volumes:
+  chef_data:
   freeradius1_logs:
   freeradius2_logs:
   freeradius3_logs:
@@ -132,6 +157,8 @@ volumes:
   elasticsearch_data:
 
 networks:
+  # chef_network:
+  #   driver: bridge
   kafka_network:
     driver: bridge
   elastic_network:
