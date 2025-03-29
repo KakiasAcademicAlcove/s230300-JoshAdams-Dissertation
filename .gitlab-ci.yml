@@ -1,119 +1,76 @@
 variables:
-  PACKER_LOG: 1
-  PACKER_LOG_PATH: "packerlog.txt"
-  SKIP_KICKSTART: "true"
 
 stages:
-  - base
-  - build
-  - test
-  - deploy
+  - docker-compose
+  - chef
+  - inspec
 
 cache: &global_cache
     key: $CI_PROJECT_NAME
     paths:
         - artifacts/
 
-base-build:
-  stage: base
+docker-compose:
+  stage: docker-compose
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/base/build-vars.json image-builds/base/base.build.pkr.hcl
+    - docker-compose up -d --build
   when: manual
   artifacts: 
     when: always
-    path: $PACKER_LOG_PATH
+    path: artifacts/logs
 
-base-test:
-  stage: base
+freeradius-chef:
+  stage: chef
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/base/build-vars.json image-builds/base/base.test.pkr.hcl
+    - docker exec -d freeradius1 chef-client -j /path/to/node/file  -E freeradius
+    - docker exec -d freeradius2 chef-client -j /path/to/node/file  -E freeradius
+    - docker exec -d freeradius3 chef-client -j /path/to/node/file  -E freeradius
 
-elk-build:
-  stage: build
+logstash-chef:
+  stage: chef
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/elk/build-vars.json image-builds/elk/elk.build.pkr.hcl
-  needs:
-    - job: base-image
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d logstash chef-client -j /path/to/node/file  -E logstash
 
-kafka-build:
-  stage: build
+kafka-chef:
+  stage: chef
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/kafka/build-vars.json image-builds/kafka/kafka.build.pkr.hcl
-  needs:
-    - job: base-image
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d kafka-node-1 chef-client -j /path/to/node/file  -E kafka
+    - docker exec -d kafka-node-2 chef-clienr -j /path/to/node/file -E kafka
 
-user-build:
-  stage: build
+elasticsearch-chef:
+  stage: chef
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/user/build-vars.json image-builds/user/user.build.pkr.hcl
-  needs:
-    - job: base-image
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d elasticsearch chef-clienr -j /path/to/node/file -E elasticsearch
 
-elk-test:
-  stage: test
+kibana-chef:
+  stage: chef
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/elk/build-vars.json image-builds/elk/elk.test.pkr.hcl
-  needs:
-    - job: elk-build
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d kibana chef-clienr -j /path/to/node/file -E kibana
 
-kafka-test:
-  stage: test
+freeradius-inspec:
+  stage: inspec
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/kafka/build-vars.json image-builds/kafka/kafka.test.pkr.hcl
-  needs:
-    - job: kafka-build
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d freeradius1 inspect exec /path/to/inspec/profile -b
+    - docker exec -d freeradius2 inspect exec /path/to/inspec/profile -b
+    - docker exec -d freeradius3 inspect exec /path/to/inspec/profile -b
 
-user-test:
-  stage: test
+logstash-inspec:
+  stage: inspec
   script:
-    - PACKER_LOG=1 packer build -var-file=image-builds/user/build-vars.json image-builds/user/user.test.pkr.hcl
-  needs:
-    - job: user-build
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - - docker exec -d logstash inspect exec /path/to/inspec/profile -b
 
-elk-deploy:
-  stage: deploy
+kafka-inspec:
+  stage: inspec
   script:
-    - 
-  needs:
-    - job: elk-test
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d kafka-node-1 inspect exec /path/to/inspec/profile -b
+    - docker exec -d kafka-node-2 inspect exec /path/to/inspec/profile -b
 
-kafka-deploy:
-  stage: deploy
+elasticsearch-inspec:
+  stage: inspec
   script:
-    - 
-  needs:
-    - job: kafka-test
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d elasticsearch inspect exec /path/to/inspec/profile -b
 
-user-deploy:
-  stage: deploy
+kibana-inspec:
+  stage: inspec
   script:
-    - 
-  needs:
-    - job: user-test
-  artifacts:
-    when: always
-    path: $PACKER_LOG_PATH
+    - docker exec -d kibana inspect exec /path/to/inspec/profile -b
