@@ -17,14 +17,15 @@ services:
   freeradius1:
     build: ./freeradius
     container_name: freeradius1
-    entrypoint: ["freeradius", "-f"]
     volumes:
-      - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
-      - ./freeradius/users:/etc/freeradius/users
+      # - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
+      # - ./freeradius/users:/etc/freeradius/users
       - freeradius1_logs:/var/log/freeradius
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
+    networks:
+      - "kafka_network"
     # networks:
     #   - chef_network
 
@@ -32,31 +33,32 @@ services:
     build: ./freeradius
     container_name: freeradius2
     volumes:
-      - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
-      - ./freeradius/users:/etc/freeradius/users
+      # - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
+      # - ./freeradius/users:/etc/freeradius/users
       - freeradius2_logs:/var/log/freeradius
     ports:
       - "2812:1812/udp"
       - "2813:1813/udp"
-    # networks:
+    networks:
+      - "kafka_network"
     #   - chef_network
 
   freeradius3:
     build: ./freeradius
     container_name: freeradius3
     volumes:
-      - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
-      - ./freeradius/users:/etc/freeradius/users
+      # - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
+      # - ./freeradius/users:/etc/freeradius/users
       - freeradius3_logs:/var/log/freeradius
     ports:
       - "3812:1812/udp"
       - "3813:1813/udp"
-    # networks:
+    networks:
+      - "kafka_network"
     #   - chef_network
 
   logstash:
     build: ./logstash
-    image: logstash:8.17.3
     container_name: logstash
     volumes:
       - freeradius1_logs:/var/log/freeradius1:ro
@@ -69,10 +71,9 @@ services:
       - kafka_network
       - elastic_network
 
-  kafka-node-1:
+  kafka-1:
     build: ./kafka
-    image: apache/kafka:latest
-    container_name: kafka-node-1
+    container_name: kafka-1
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: controller,broker
@@ -90,11 +91,11 @@ services:
     networks:
       # - chef_network
       - kafka_network
+      - elastic_network
 
-  kafka-node-2:
+  kafka-2:
     build: ./kafka
-    image: apache/kafka:latest
-    container_name: kafka-node-2
+    container_name: kafka-2
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: controller,broker
@@ -112,10 +113,10 @@ services:
     networks:
       # - chef_network
       - kafka_network
+      - elastic_network
 
   elasticsearch:
     build: ./elasticsearch
-    image: elasticsearch:8.17.3
     container_name: elasticsearch
     environment:
       - xpack.security.enabled=false
@@ -131,7 +132,6 @@ services:
   
   kibana:
     build: ./kibana
-    image: kibana:8.17.3
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
