@@ -1,11 +1,11 @@
-# Start from Ubuntu base image
-FROM ubuntu:latest
+# 3.2.7 uses Ubuntu 22.04
+FROM freeradius/freeradius-server:3.2.7
 
 # Update container
-RUN apt-get update && apt-get upgrade -y && apt-get install -y curl
+# RUN apt-get update && apt-get upgrade -y && apt-get install -y curl
 
 # Install FreeRADIUS
-RUN apt-get install -y freeradius freeradius-ldap freeradius-mysql
+# RUN apt-get install -y freeradius freeradius-ldap freeradius-mysql
 
 # Install Cinc
 COPY binaries/cinc_18.6.2-1_amd64.deb tmp/cinc.deb

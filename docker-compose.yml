@@ -75,16 +75,17 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: controller,broker
       KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-node-1:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-1:9092'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-node-1:9093,2@kafka-node-2:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     ports:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
+      # - ./kafka/server1.properties:/opt/kafka/config/server.properties
     networks:
       # - chef_network
       - kafka_network
@@ -97,16 +98,17 @@ services:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: controller,broker
       KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-node-2:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-2:9092'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-node-1:9093,2@kafka-node-2:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     ports:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
+      # - ./kafka/server2.properties:/opt/kafka/config/server.properties
     networks:
       # - chef_network
       - kafka_network

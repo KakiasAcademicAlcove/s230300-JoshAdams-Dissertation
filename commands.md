@@ -27,3 +27,6 @@ docker exec -it kibana /bin/bash
 cd /opt/cinc/cookbooks/freeradius/
 chef-client --local-mode --override-runlist "recipe[freeradius::default]" --why-run
 chef-client --local-mode --override-runlist "recipe[freeradius::default]"
+
+# Git
+git reset HEAD^
