@@ -9,11 +9,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y curl adduser
 # RUN curl -L https://artifacts.elastic.co/downloads/kibana/kibana-8.17.4-linux-x86_64.tar.gz
 
 COPY binaries/kibana-8.17.4-amd64.deb tmp/kibana.deb
-
 RUN dpkg -i tmp/kibana.deb
-
 RUN apt-get install -f -y
-
 RUN rm -f /tmp/kibana.deb
 
 # Install Chef

@@ -18,23 +18,18 @@ services:
     build: ./freeradius
     container_name: freeradius1
     volumes:
-      # - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
-      # - ./freeradius/users:/etc/freeradius/users
       - freeradius1_logs:/var/log/freeradius
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
     networks:
       - "kafka_network"
-    # networks:
     #   - chef_network
 
   freeradius2:
     build: ./freeradius
     container_name: freeradius2
     volumes:
-      # - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
-      # - ./freeradius/users:/etc/freeradius/users
       - freeradius2_logs:/var/log/freeradius
     ports:
       - "2812:1812/udp"
@@ -47,8 +42,6 @@ services:
     build: ./freeradius
     container_name: freeradius3
     volumes:
-      # - ./freeradius/radiusd.conf:/etc/freeradius/radiusd.conf
-      # - ./freeradius/users:/etc/freeradius/users
       - freeradius3_logs:/var/log/freeradius
     ports:
       - "3812:1812/udp"
@@ -70,6 +63,10 @@ services:
       # - chef_network
       - kafka_network
       - elastic_network
+    depends_on:
+      - freeradius1
+      - freeradius2
+      - freeradius3
 
   kafka-1:
     build: ./kafka
