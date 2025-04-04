@@ -50,23 +50,23 @@ services:
       - "kafka_network"
     #   - chef_network
 
-  logstash:
-    build: ./logstash
-    container_name: logstash
-    volumes:
-      - freeradius1_logs:/var/log/freeradius1:ro
-      - freeradius2_logs:/var/log/freeradius2:ro
-      - freeradius3_logs:/var/log/freeradius3:ro
-    ports:
-      - "5044:5044"
-    networks:
-      # - chef_network
-      - kafka_network
-      - elastic_network
-    depends_on:
-      - freeradius1
-      - freeradius2
-      - freeradius3
+  # logstash:
+  #   build: ./logstash
+  #   container_name: logstash
+  #   volumes:
+  #     - freeradius1_logs:/var/log/freeradius1:ro
+  #     - freeradius2_logs:/var/log/freeradius2:ro
+  #     - freeradius3_logs:/var/log/freeradius3:ro
+  #   ports:
+  #     - "5044:5044"
+  #   networks:
+  #     # - chef_network
+  #     - kafka_network
+  #     - elastic_network
+  #   depends_on:
+  #     - freeradius1
+  #     - freeradius2
+  #     - freeradius3
 
   kafka-1:
     build: ./kafka
@@ -85,6 +85,7 @@ services:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
+      - ./kafka/server1.properties:/opt/kafka/config/server.properties
     networks:
       # - chef_network
       - kafka_network
@@ -107,6 +108,7 @@ services:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
+      - ./kafka/server2.properties:/opt/kafka/config/server.properties
     networks:
       # - chef_network
       - kafka_network
