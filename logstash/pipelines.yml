@@ -1,2 +1,2 @@
-- pipeline.id: main
+- pipeline.id: freeradius_logs
   path.config: "/usr/share/logstash/pipeline/freeradius_logs.conf"

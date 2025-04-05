@@ -28,5 +28,8 @@ cd /opt/cinc/cookbooks/freeradius/
 chef-client --local-mode --override-runlist "recipe[freeradius::default]" --why-run
 chef-client --local-mode --override-runlist "recipe[freeradius::default]"
 
+# FreeRADIUS
+radtest testuser password 127.0.0.1 0 testing123
+
 # Git
 git reset HEAD^

@@ -20,6 +20,8 @@ RUN chef-client --version
 # Copy over Cinc files
 COPY chef/ opt/cinc/
 
+RUN groupmod -g 101 logstash || true && usermod -a -G 101 logstash
+
 USER logstash
 
 # Copy initial files for Logstash service start-up
