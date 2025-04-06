@@ -1,11 +1,25 @@
 version: "3.8"
 
 volumes:
-#   chef_data:
+  freeradius_config:
+  logstash_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $LOGSTASH_CONFIG_DIR
+      o: uid=root,gid=root,bind
+  logstash_pipelines:
+    driver: local
+    driver_opts:
+      type: none
+      device: $LOGSTASH_PIPELINES_DIR
+      o: uid=root,gid=root,bind
+  kafka_config:
+  elasticsearch_config:
+  kibana_config:
   freeradius1_logs:
   freeradius2_logs:
-#   freeradius3_logs:
-#   logstash_config:
+  freeradius3_logs:
 #   kafka-data-1:
 #   kafka-data-2:
 #   elasticsearch_data:
@@ -19,98 +33,99 @@ networks:
 #     driver: bridge
 
 services:
-  chef:
-    image: cincproject/workstation:24.12.1073
-    container_name: chef
-    volumes: 
-      - ./chef:/chef
-      - ./freeradius/config:/freeradius
-      - ./logstash/config:/logstash
-      - ./kafka/config:/kafka
-      - ./elasticsearch/config:/elasticsearch
-      - ./kibana/config:/kibana
-    entrypoint: ["/bin/sh", "-c", "chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[freeradius]'
-                                   chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[logstash]'
-                                   chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[kafka]'
-                                   chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[elasticsearch]'
-                                   chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[kafka]'
-                "]
+  # chef:
+  #   image: cincproject/workstation:24.12.1073
+  #   container_name: chef
+  #   volumes: 
+  #     - ./chef:/chef
+  #     - freeradius_config:/configs/freeradius
+  #     - logstash_config:/configs/logstash
+  #     - kafka_config:/configs/kafka
+  #     - elasticsearch_config:/configs/elasticsearch
+  #     - kibana_config:/configs/kibana
+  #   entrypoint: ["/bin/sh", "-c", "chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[freeradius]' &&
+  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[logstash]' &&
+  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[kafka]' &&
+  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[elasticsearch]' &&
+  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[kafka]'
+  #               "]
 
   freeradius1:
-    image: freeradius/freeradius-server:3.2.7
+    image: freeradius/freeradius-server:$FREERADIUS_TAG
     container_name: freeradius1
     volumes:
       - freeradius1_logs:/var/log/freeradius
-      - ./freeradius/config/radiusd.conf:/etc/freeradius/radiusd.conf
-      - ./freeradius/config/users:/etc/freeradius/users
+      # - freeradius_config:/etc/freeradius
     entrypoint: ["freeradius", "-f"]
+    # entrypoint: sleep infinity
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
     networks:
       - "kafka_network"
-    depends_on:
-      chef:
-        condition: service_completed_successfully
+    # depends_on:
+    #   chef:
+    #     condition: service_completed_successfully
 
     #   - chef_network
 
   freeradius2:
-    image: freeradius/freeradius-server:3.2.7
+    image: freeradius/freeradius-server:$FREERADIUS_TAG
     container_name: freeradius2
     volumes:
       - freeradius2_logs:/var/log/freeradius
-      - ./freeradius/config/radiusd.conf:/etc/freeradius/radiusd.conf
-      - ./freeradius/config/users:/etc/freeradius/users
+      # - freeradius_config:/etc/freeradius
+    entrypoint: ["freeradius", "-f"]
     ports:
       - "2812:1812/udp"
       - "2813:1813/udp"
     networks:
       - "kafka_network"
-    depends_on:
-      chef:
-        condition: service_completed_successfully
+    # depends_on:
+    #   chef:
+    #     condition: service_completed_successfully
     #   - chef_network
 
   freeradius3:
-    image: freeradius/freeradius-server:3.2.7
+    image: freeradius/freeradius-server:$FREERADIUS_TAG
     container_name: freeradius3
     volumes:
       - freeradius3_logs:/var/log/freeradius
-      - ./freeradius/config/radiusd.conf:/etc/freeradius/radiusd.conf
-      - ./freeradius/config/users:/etc/freeradius/users
+      # - freeradius_config:/etc/freeradius
+    entrypoint: ["freeradius", "-f"]
     ports:
       - "3812:1812/udp"
       - "3813:1813/udp"
     networks:
       - "kafka_network"
-    depends_on:
-      chef:
-        condition: service_completed_successfully
+    # depends_on:
+    #   chef:
+    #     condition: service_completed_successfully
     #   - chef_network
 
-#   logstash:
-#     build: ./logstash
-#     container_name: logstash
-#     volumes:
-#       - freeradius1_logs:/var/log/freeradius1:ro
-#       - freeradius2_logs:/var/log/freeradius2:ro
-#       - freeradius3_logs:/var/log/freeradius3:ro
-#       - ./logstash/freeradius_logs.conf:/usr/share/logstash/pipeline/freeradius_logs.conf
-#       - ./logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
-#     ports:
-#       - "5044:5044"
-#     networks:
-#       # - chef_network
-#       - kafka_network
-#       - elastic_network
-#     depends_on:
-#       - freeradius1
-#       - freeradius2
-#       - freeradius3
-#       - kafka-1
-#       - kafka-2
-#       # - elasticsearch
+  logstash:
+    image: docker.elastic.co/logstash/logstash:$ELK_VERSION
+    container_name: logstash
+    volumes:
+      - freeradius1_logs:/var/log/freeradius1:ro
+      - freeradius2_logs:/var/log/freeradius2:ro
+      - freeradius3_logs:/var/log/freeradius3:ro
+
+      # - ./logstash/freeradius_logs.conf:/usr/share/logstash/pipeline/freeradius_logs.conf
+      # - ./logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+    ports:
+      - "5044:5044"
+    networks:
+      # - chef_network
+      - kafka_network
+      # - elastic_network
+    depends_on:
+      - freeradius1
+      - freeradius2
+      - freeradius3
+      # - kafka-1
+      # - kafka-2
+      # - elasticsearch
 
 #   kafka-1:
 #     build: ./kafka
@@ -161,7 +176,7 @@ services:
 #       - elastic_network
 
 #   # elasticsearch:
-#   #   build: ./elasticsearch
+#   #   image: elasticsearch:$ELK_VERSION
 #   #   container_name: elasticsearch
 #   #   environment:
 #   #     - xpack.security.enabled=false
@@ -177,7 +192,7 @@ services:
 #   #     - elastic_network
   
 #   # kibana:
-#   #   build: ./kibana
+#   #   image: kibana:$ELK_VERSION
 #   #   container_name: kibana
 #   #   environment:
 #   #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
@@ -190,3 +205,12 @@ services:
 #   #     - elastic_network
 #   #   depends_on:
 #   #     - elasticsearch
+
+  # metricbeat:
+  #   image: metricbeat:$ELK_VERSION
+  #   container_name: metricbeat
+  #   environment:
+  #   volumes:
+  #   ports:
+  #   networks:
+  #   depends_on:

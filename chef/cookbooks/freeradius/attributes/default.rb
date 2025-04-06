@@ -1,3 +1,4 @@
+default["freeradius"]["config_dir"]             = "/configs/freeradius"
 default["freeradius"]["version"]                = "3.0"
 default["freeradius"]["path"]                   = "/etc/freeradius"
 default["freeradius"]["user"]["name"]           = "freerad"
