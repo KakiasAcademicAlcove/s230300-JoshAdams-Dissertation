@@ -29,7 +29,11 @@ chef-client --local-mode --override-runlist "recipe[freeradius::default]" --why-
 chef-client --local-mode --override-runlist "recipe[freeradius::default]"
 
 # FreeRADIUS
-radtest testuser password 127.0.0.1 0 testing123
+radtest testuser password 127.0.0.1 1812 testing123
 
 # Git
 git reset HEAD^
+
+# Kafka
+cd /opt/kafka/bin && ./kafka-topics.sh --create --topic auth_accept --bootstrap-server kafka-1:9092 --partitions 3 --replication-factor 1
+cd /opt/kafka/bin && ./kafka-console-consumer.sh --bootstrap-server kafka-1:9092 --topic auth_accept --from-beginning
