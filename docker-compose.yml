@@ -1,5 +1,23 @@
 version: "3.8"
 
+volumes:
+#   chef_data:
+  freeradius1_logs:
+  freeradius2_logs:
+#   freeradius3_logs:
+#   logstash_config:
+#   kafka-data-1:
+#   kafka-data-2:
+#   elasticsearch_data:
+
+networks:
+#   # chef_network:
+#   #   driver: bridge
+  kafka_network:
+    driver: bridge
+#   elastic_network:
+#     driver: bridge
+
 services:
   chef:
     image: cincproject/workstation:24.12.1073
@@ -172,21 +190,3 @@ services:
 #   #     - elastic_network
 #   #   depends_on:
 #   #     - elasticsearch
-
-volumes:
-#   chef_data:
-  freeradius1_logs:
-  freeradius2_logs:
-#   freeradius3_logs:
-#   logstash_config:
-#   kafka-data-1:
-#   kafka-data-2:
-#   elasticsearch_data:
-
-networks:
-#   # chef_network:
-#   #   driver: bridge
-  kafka_network:
-    driver: bridge
-#   elastic_network:
-#     driver: bridge
