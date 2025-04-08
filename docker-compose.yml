@@ -175,42 +175,53 @@ services:
 #       - kafka_network
 #       - elastic_network
 
-#   # elasticsearch:
-#   #   image: elasticsearch:$ELK_VERSION
-#   #   container_name: elasticsearch
-#   #   environment:
-#   #     - xpack.security.enabled=false
-#   #     - discovery.type=single-node
-#   #     - ES_JAVA_OPTS=-Xms1g -Xmx1g
-#   #   ports:
-#   #     - "9200:9200"
-#   #   volumes:
-#   #     - elasticsearch_data:/usr/share/elasticsearch/data
-#   #     - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-#   #   networks:
-#   #     # - chef_network
-#   #     - elastic_network
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:$ELK_VERSION
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      # - chef_network
+      - elastic_network
   
-#   # kibana:
-#   #   image: kibana:$ELK_VERSION
-#   #   container_name: kibana
-#   #   environment:
-#   #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-#   #   volumes:
-#   #     - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
-#   #   ports:
-#   #     - "5601:5601"
-#   #   networks:
-#   #     # - chef_network
-#   #     - elastic_network
-#   #   depends_on:
-#   #     - elasticsearch
+  kibana:
+    image: docker.elastic.co/kibana/kibana:$ELK_VERSION:$ELK_VERSION
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - "5601:5601"
+    networks:
+      # - chef_network
+      - elastic_network
+    depends_on:
+      - elasticsearch
 
-  # metricbeat:
-  #   image: metricbeat:$ELK_VERSION
-  #   container_name: metricbeat
-  #   environment:
-  #   volumes:
-  #   ports:
-  #   networks:
-  #   depends_on:
+  metricbeat:
+    image: docker.elastic.co/metricbeat/metricbeat:$ELK_VERSION
+    container_name: metricbeat
+    environment:
+    volumes:
+      ./metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
+    ports:
+    networks:
+    depends_on:
+
+  filebeat:
+    image: docker.elastic.co/filebeat/filebeat:$ELK_VERSION
+    container_name: filebeat
+    environment:
+    volumes:
+      ./filebeat.yml:/usr/share/filebeat/config/filebeat.yml
+    ports:
+    networks:
+    depends_on:
