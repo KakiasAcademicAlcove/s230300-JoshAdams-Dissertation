@@ -216,7 +216,7 @@ services:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-      - $ELASTICSEARCH_CONFIG_DIR/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - $ELASTICSEARCH_CONFIG_DIR/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - elastic_network
   
