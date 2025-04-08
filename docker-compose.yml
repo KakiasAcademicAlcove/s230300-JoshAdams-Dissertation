@@ -5,7 +5,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: $FREERADIUS_CONFIG_DIR
+      device: $FREERADIUS_DIR
       o: uid=root,gid=root,bind
   logstash_config:
     driver: local
@@ -17,13 +17,19 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: $LOGSTASH_PIPELINES_DIR
+      device: $LOGSTASH_PIPELINE_DIR
       o: uid=root,gid=root,bind
-  kafka_config:
+  kafka_node_1_config:
     driver: local
     driver_opts:
       type: none
-      device: $KAFKA_CONFIG_DIR
+      device: $KAFKA_NODE_1_CONFIG_DIR
+      o: uid=root,gid=root,bind
+  kafka_node_2_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $KAFKA_NODE_2_CONFIG_DIR
       o: uid=root,gid=root,bind
   elasticsearch_config:
     driver: local
@@ -87,12 +93,12 @@ services:
   #               "]
 
   freeradius1:
-    image: freeradius/freeradius-server:$FREERADIUS_TAG
+    image: freeradius/freeradius-server:$FREERADIUS_VERSION
     container_name: freeradius1
     volumes:
       - freeradius1_logs:/var/log/freeradius
-      - ./freeradius/radiusd.conf
-      - ./freeradius/users
+      - $FREERADIUS_CONFIG_DIR/radiusd.conf
+      - $FREERADIUS_DIR/freeradius/users
     entrypoint: ["freeradius", "-f"]
     ports:
       - "1812:1812/udp"
@@ -103,11 +109,12 @@ services:
       - "apm-server"
 
   freeradius2:
-    image: freeradius/freeradius-server:$FREERADIUS_TAG
+    image: freeradius/freeradius-server:$FREERADIUS_VERSION
     container_name: freeradius2
     volumes:
       - freeradius2_logs:/var/log/freeradius
-      # - freeradius_config:/etc/freeradius
+      - $FREERADIUS_CONFIG_DIR/radiusd.conf
+      - $FREERADIUS_DIR/freeradius/users
     entrypoint: ["freeradius", "-f"]
     ports:
       - "2812:1812/udp"
@@ -118,11 +125,12 @@ services:
       - "apm-server"
 
   freeradius3:
-    image: freeradius/freeradius-server:$FREERADIUS_TAG
+    image: freeradius/freeradius-server:$FREERADIUS_VERSION
     container_name: freeradius3
     volumes:
       - freeradius3_logs:/var/log/freeradius
-      # - freeradius_config:/etc/freeradius
+      - $FREERADIUS_CONFIG_DIR/radiusd.conf
+      - $FREERADIUS_DIR/freeradius/users
     entrypoint: ["freeradius", "-f"]
     ports:
       - "3812:1812/udp"
@@ -139,8 +147,8 @@ services:
       - freeradius1_logs:/var/log/freeradius1:ro
       - freeradius2_logs:/var/log/freeradius2:ro
       - freeradius3_logs:/var/log/freeradius3:ro
-      - ./logstash/config:/usr/share/logstash/config
-      - ./logstash/pipeline:/usr/share/pipeline
+      - $LOGSTASH_CONFIG_DIR:/usr/share/logstash/config
+      - $LOGSTASH_PIPELINE_DIR:/usr/share/pipeline
     ports:
       - "5044:5044"
     networks:
@@ -152,7 +160,7 @@ services:
       - elasticsearch
 
   kafka-1:
-    build: ./kafka
+    image: apache/kafka:$KAFKA_VERSION
     container_name: kafka-1
     environment:
       KAFKA_NODE_ID: 1
@@ -169,13 +177,13 @@ services:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
-      - ./kafka/node-2/server.properties:/opt/kafka/config/server.properties
+      - $KAFKA_NODE_1_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
 
   kafka-2:
-    build: ./kafka
+    image: apache/kafka:$KAFKA_VERSION
     container_name: kafka-2
     environment:
       KAFKA_NODE_ID: 2
@@ -192,7 +200,7 @@ services:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
-      - ./kafka/node-2/server.properties:/opt/kafka/config/server.properties
+      - $KAFKA_NODE_2_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -208,17 +216,17 @@ services:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - $ELASTICSEARCH_CONFIG_DIR/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - elastic_network
   
   kibana:
-    image: docker.elastic.co/kibana/kibana:$ELK_VERSION:$ELK_VERSION
+    image: docker.elastic.co/kibana/kibana:$ELK_VERSION
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     volumes:
-      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - $KIBANA_CONFIG_DIR/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - "5601:5601"
     networks:
@@ -227,30 +235,28 @@ services:
       - elasticsearch
 
   metricbeat:
-    image: docker.elastic.co/metricbeat/metricbeat:$ELK_VERSION
+    image: docker.elastic.co/beats/metricbeat:$ELK_VERSION
     container_name: metricbeat
-    environment:
     volumes:
-      ./metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
-    ports:
+      - $METRICBEAT_CONFIG_DIR/metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
+    # ports:
     networks:
       - elastic_network
 
   filebeat:
-    image: docker.elastic.co/filebeat/filebeat:$ELK_VERSION
+    image: docker.elastic.co/beats/filebeat:$ELK_VERSION
     container_name: filebeat
-    environment:
     volumes:
-      ./filebeat.yml:/usr/share/filebeat/config/filebeat.yml
-    ports:
+      - $FILEBEAT_CONFIG_DIR/filebeat.yml:/usr/share/filebeat/config/filebeat.yml
+    # ports:
     networks:
       - elastic_network
   
   apm-server:
     image: docker.elastic.co/apm/apm-server:$ELK_VERSION
     container_name: apm-server
-    environment:
     volumes:
-    ports:
+      - $APM_CONFIG_DIR/apm-server.yml:/usr/share/apm/config/apm-server.yml
+    # ports:
     networks:
       - elastic_network
