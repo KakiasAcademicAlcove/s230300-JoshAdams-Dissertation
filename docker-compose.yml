@@ -225,3 +225,12 @@ services:
     ports:
     networks:
     depends_on:
+  
+  apm:
+    image: docker.elastic.co/apm/apm-server:$ELK_VERSION
+    container_name: apm
+    environment:
+    volumes:
+    ports:
+    networks:
+    depends_on:
