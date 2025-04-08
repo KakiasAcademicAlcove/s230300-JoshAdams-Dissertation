@@ -2,6 +2,11 @@ version: "3.8"
 
 volumes:
   freeradius_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $FREERADIUS_CONFIG_DIR
+      o: uid=root,gid=root,bind
   logstash_config:
     driver: local
     driver_opts:
@@ -15,22 +20,53 @@ volumes:
       device: $LOGSTASH_PIPELINES_DIR
       o: uid=root,gid=root,bind
   kafka_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $KAFKA_CONFIG_DIR
+      o: uid=root,gid=root,bind
   elasticsearch_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $ELASTICSEARCH_CONFIG_DIR
+      o: uid=root,gid=root,bind
   kibana_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $KIBANA_CONFIG_DIR
+      o: uid=root,gid=root,bind
+  metricbeat_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $METRICBEAT_CONFIG_DIR
+      o: uid=root,gid=root,bind
+  filebeat_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $FILEBEAT_CONFIG_DIR
+      o: uid=root,gid=root,bind
+  apm_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: $APM_CONFIG_DIR
+      o: uid=root,gid=root,bind
   freeradius1_logs:
   freeradius2_logs:
   freeradius3_logs:
-#   kafka-data-1:
-#   kafka-data-2:
-#   elasticsearch_data:
+  kafka-data-1:
+  kafka-data-2:
+  elasticsearch_data:
 
 networks:
-#   # chef_network:
-#   #   driver: bridge
   kafka_network:
     driver: bridge
-#   elastic_network:
-#     driver: bridge
+  elastic_network:
+    driver: bridge
 
 services:
   # chef:
@@ -55,19 +91,16 @@ services:
     container_name: freeradius1
     volumes:
       - freeradius1_logs:/var/log/freeradius
-      # - freeradius_config:/etc/freeradius
+      - ./freeradius/radiusd.conf
+      - ./freeradius/users
     entrypoint: ["freeradius", "-f"]
-    # entrypoint: sleep infinity
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
     networks:
       - "kafka_network"
-    # depends_on:
-    #   chef:
-    #     condition: service_completed_successfully
-
-    #   - chef_network
+    depends_on:
+      - "apm-server"
 
   freeradius2:
     image: freeradius/freeradius-server:$FREERADIUS_TAG
@@ -81,10 +114,8 @@ services:
       - "2813:1813/udp"
     networks:
       - "kafka_network"
-    # depends_on:
-    #   chef:
-    #     condition: service_completed_successfully
-    #   - chef_network
+    depends_on:
+      - "apm-server"
 
   freeradius3:
     image: freeradius/freeradius-server:$FREERADIUS_TAG
@@ -98,10 +129,8 @@ services:
       - "3813:1813/udp"
     networks:
       - "kafka_network"
-    # depends_on:
-    #   chef:
-    #     condition: service_completed_successfully
-    #   - chef_network
+    depends_on:
+      - "apm-server"
 
   logstash:
     image: docker.elastic.co/logstash/logstash:$ELK_VERSION
@@ -110,70 +139,63 @@ services:
       - freeradius1_logs:/var/log/freeradius1:ro
       - freeradius2_logs:/var/log/freeradius2:ro
       - freeradius3_logs:/var/log/freeradius3:ro
-
-      # - ./logstash/freeradius_logs.conf:/usr/share/logstash/pipeline/freeradius_logs.conf
-      # - ./logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/config:/usr/share/logstash/config
+      - ./logstash/pipeline:/usr/share/pipeline
     ports:
       - "5044:5044"
     networks:
-      # - chef_network
       - kafka_network
-      # - elastic_network
+      - elastic_network
     depends_on:
-      - freeradius1
-      - freeradius2
-      - freeradius3
-      # - kafka-1
-      # - kafka-2
-      # - elasticsearch
+      - kafka-1
+      - kafka-2
+      - elasticsearch
 
-#   kafka-1:
-#     build: ./kafka
-#     container_name: kafka-1
-#     environment:
-#       KAFKA_NODE_ID: 1
-#       KAFKA_PROCESS_ROLES: controller,broker
-#       KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-#       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-1:9092'
-#       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-#       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-#       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-#       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
-#       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-#       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
-#     ports:
-#       - "19092:9092"
-#     volumes:
-#       - kafka-data-1:/var/lib/kafka
-#       # - ./kafka/server1.properties:/opt/kafka/config/server.properties
-#     networks:
-#       # - chef_network
-#       - kafka_network
-#       - elastic_network
+  kafka-1:
+    build: ./kafka
+    container_name: kafka-1
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-1:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    ports:
+      - "19092:9092"
+    volumes:
+      - kafka-data-1:/var/lib/kafka
+      - ./kafka/node-2/server.properties:/opt/kafka/config/server.properties
+    networks:
+      - kafka_network
+      - elastic_network
 
-#   kafka-2:
-#     build: ./kafka
-#     container_name: kafka-2
-#     environment:
-#       KAFKA_NODE_ID: 2
-#       KAFKA_PROCESS_ROLES: controller,broker
-#       KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-#       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-2:9092'
-#       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-#       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-#       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-#       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
-#       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-#       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
-#     ports:
-#       - "29092:9092"
-#     volumes:
-#       - kafka-data-2:/var/lib/kafka
-#       # - ./kafka/server2.properties:/opt/kafka/config/server.properties
-#     networks:
-#       # - chef_network
-#       - kafka_network
-#       - elastic_network
+  kafka-2:
+    build: ./kafka
+    container_name: kafka-2
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-2:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    ports:
+      - "29092:9092"
+    volumes:
+      - kafka-data-2:/var/lib/kafka
+      - ./kafka/node-2/server.properties:/opt/kafka/config/server.properties
+    networks:
+      - kafka_network
+      - elastic_network
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:$ELK_VERSION
@@ -188,7 +210,6 @@ services:
       - elasticsearch_data:/usr/share/elasticsearch/data
       - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
-      # - chef_network
       - elastic_network
   
   kibana:
@@ -201,7 +222,6 @@ services:
     ports:
       - "5601:5601"
     networks:
-      # - chef_network
       - elastic_network
     depends_on:
       - elasticsearch
@@ -214,7 +234,7 @@ services:
       ./metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
     ports:
     networks:
-    depends_on:
+      - elastic_network
 
   filebeat:
     image: docker.elastic.co/filebeat/filebeat:$ELK_VERSION
@@ -224,13 +244,13 @@ services:
       ./filebeat.yml:/usr/share/filebeat/config/filebeat.yml
     ports:
     networks:
-    depends_on:
+      - elastic_network
   
-  apm:
+  apm-server:
     image: docker.elastic.co/apm/apm-server:$ELK_VERSION
-    container_name: apm
+    container_name: apm-server
     environment:
     volumes:
     ports:
     networks:
-    depends_on:
+      - elastic_network
