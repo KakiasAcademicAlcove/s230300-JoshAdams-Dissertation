@@ -96,7 +96,7 @@ services:
     image: freeradius/freeradius-server:$FREERADIUS_VERSION
     container_name: freeradius1
     volumes:
-      - freeradius1_logs:/var/log/freeradius
+      - freeradius1_logs:$FREERADIUS_LOG_DIR
       - $FREERADIUS_CONFIG_DIR/radiusd.conf
       - $FREERADIUS_DIR/freeradius/users
     entrypoint: ["freeradius", "-f"]
@@ -112,7 +112,7 @@ services:
     image: freeradius/freeradius-server:$FREERADIUS_VERSION
     container_name: freeradius2
     volumes:
-      - freeradius2_logs:/var/log/freeradius
+      - freeradius2_logs:$FREERADIUS_LOG_DIR
       - $FREERADIUS_CONFIG_DIR/radiusd.conf
       - $FREERADIUS_DIR/freeradius/users
     entrypoint: ["freeradius", "-f"]
@@ -128,7 +128,7 @@ services:
     image: freeradius/freeradius-server:$FREERADIUS_VERSION
     container_name: freeradius3
     volumes:
-      - freeradius3_logs:/var/log/freeradius
+      - freeradius3_logs:$FREERADIUS_LOG_DIR
       - $FREERADIUS_CONFIG_DIR/radiusd.conf
       - $FREERADIUS_DIR/freeradius/users
     entrypoint: ["freeradius", "-f"]
@@ -147,8 +147,9 @@ services:
       - freeradius1_logs:/var/log/freeradius1:ro
       - freeradius2_logs:/var/log/freeradius2:ro
       - freeradius3_logs:/var/log/freeradius3:ro
-      - $LOGSTASH_CONFIG_DIR:/usr/share/logstash/config
-      - $LOGSTASH_PIPELINE_DIR:/usr/share/pipeline
+      # - $LOGSTASH_CONFIG_DIR/logstash.yml:/usr/share/logstash/config/logstash.yml
+      # - $LOGSTASH_CONFIG_DIR/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      # - $LOGSTASH_PIPELINE_DIR:/usr/share/pipeline
     ports:
       - "5044:5044"
     networks:
