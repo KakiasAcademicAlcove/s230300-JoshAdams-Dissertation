@@ -74,7 +74,6 @@ networks:
 
 services:
   freeradius:
-    # image: freeradius/freeradius-server:$FREERADIUS_VERSION
     build: ./freeradius
     container_name: freeradius
     volumes:
@@ -95,7 +94,6 @@ services:
       - "apm-server"
 
   logstash:
-    # image: docker.elastic.co/logstash/logstash:$ELK_VERSION
     build: ./logstash
     container_name: logstash
     volumes:
