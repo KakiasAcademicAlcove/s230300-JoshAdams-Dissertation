@@ -7,12 +7,12 @@ volumes:
       type: none
       device: $FREERADIUS_DIR
       o: uid=root,gid=root,bind
-  logstash_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $LOGSTASH_CONFIG_DIR
-      o: uid=root,gid=root,bind
+  # logstash_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: $LOGSTASH_CONFIG_DIR
+  # o: uid=root,gid=root,bind
   logstash_pipelines:
     driver: local
     driver_opts:
@@ -61,9 +61,7 @@ volumes:
       type: none
       device: $APM_CONFIG_DIR
       o: uid=root,gid=root,bind
-  freeradius1_logs:
-  freeradius2_logs:
-  freeradius3_logs:
+  freeradius_logs:
   kafka-data-1:
   kafka-data-2:
   elasticsearch_data:
@@ -75,30 +73,18 @@ networks:
     driver: bridge
 
 services:
-  # chef:
-  #   image: cincproject/workstation:24.12.1073
-  #   container_name: chef
-  #   volumes: 
-  #     - ./chef:/chef
-  #     - freeradius_config:/configs/freeradius
-  #     - logstash_config:/configs/logstash
-  #     - kafka_config:/configs/kafka
-  #     - elasticsearch_config:/configs/elasticsearch
-  #     - kibana_config:/configs/kibana
-  #   entrypoint: ["/bin/sh", "-c", "chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[freeradius]' &&
-  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[logstash]' &&
-  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[kafka]' &&
-  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[elasticsearch]' &&
-  #                                  chef-client --local-mode --config /chef/knife.rb --override-runlist 'recipe[kafka]'
-  #               "]
-
-  freeradius1:
-    image: freeradius/freeradius-server:$FREERADIUS_VERSION
-    container_name: freeradius1
+  freeradius:
+    # image: freeradius/freeradius-server:$FREERADIUS_VERSION
+    build: ./freeradius
+    container_name: freeradius
     volumes:
-      - freeradius1_logs:$FREERADIUS_LOG_DIR
-      - $FREERADIUS_CONFIG_DIR/radiusd.conf
-      - $FREERADIUS_DIR/freeradius/users
+      - freeradius_logs:$FREERADIUS_LOG_DIR
+      - type: bind
+        source: $FREERADIUS_DIR/radiusd.conf
+        target: /etc/freeradius/radiusd.conf
+      - type: bind
+        source: $FREERADIUS_DIR/users
+        target: /etc/freeradius/users
     entrypoint: ["freeradius", "-f"]
     ports:
       - "1812:1812/udp"
@@ -108,48 +94,17 @@ services:
     depends_on:
       - "apm-server"
 
-  freeradius2:
-    image: freeradius/freeradius-server:$FREERADIUS_VERSION
-    container_name: freeradius2
-    volumes:
-      - freeradius2_logs:$FREERADIUS_LOG_DIR
-      - $FREERADIUS_CONFIG_DIR/radiusd.conf
-      - $FREERADIUS_DIR/freeradius/users
-    entrypoint: ["freeradius", "-f"]
-    ports:
-      - "2812:1812/udp"
-      - "2813:1813/udp"
-    networks:
-      - "kafka_network"
-    depends_on:
-      - "apm-server"
-
-  freeradius3:
-    image: freeradius/freeradius-server:$FREERADIUS_VERSION
-    container_name: freeradius3
-    volumes:
-      - freeradius3_logs:$FREERADIUS_LOG_DIR
-      - $FREERADIUS_CONFIG_DIR/radiusd.conf
-      - $FREERADIUS_DIR/freeradius/users
-    entrypoint: ["freeradius", "-f"]
-    ports:
-      - "3812:1812/udp"
-      - "3813:1813/udp"
-    networks:
-      - "kafka_network"
-    depends_on:
-      - "apm-server"
-
   logstash:
-    image: docker.elastic.co/logstash/logstash:$ELK_VERSION
+    # image: docker.elastic.co/logstash/logstash:$ELK_VERSION
+    build: ./logstash
     container_name: logstash
     volumes:
-      - freeradius1_logs:/var/log/freeradius1:ro
-      - freeradius2_logs:/var/log/freeradius2:ro
-      - freeradius3_logs:/var/log/freeradius3:ro
-      # - $LOGSTASH_CONFIG_DIR/logstash.yml:/usr/share/logstash/config/logstash.yml
-      # - $LOGSTASH_CONFIG_DIR/pipelines.yml:/usr/share/logstash/config/pipelines.yml
-      # - $LOGSTASH_PIPELINE_DIR:/usr/share/pipeline
+      - freeradius_logs:/var/log/freeradius:ro
+      # - logstash_config:/usr/share/logstash/config
+      - $LOGSTASH_CONFIG_DIR/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - $LOGSTASH_CONFIG_DIR/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      # - $LOGSTASH_PIPELINE_DIR/freeradius_logs.conf:/usr/share/pipeline/freeradius_logs.conf
+    # entrypoint: ["sleep", "infinity"]
     ports:
       - "5044:5044"
     networks:
