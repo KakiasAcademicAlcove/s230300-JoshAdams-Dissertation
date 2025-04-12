@@ -64,6 +64,7 @@ volumes:
   freeradius_logs:
   kafka-data-1:
   kafka-data-2:
+  kafka-data-3:
   elasticsearch_data:
 
 networks:
@@ -91,7 +92,7 @@ services:
     networks:
       - "kafka_network"
     depends_on:
-      - "apm-server"
+      - apm-server
 
   logstash:
     build: ./logstash
@@ -99,9 +100,6 @@ services:
     volumes:
       - freeradius_logs:/var/log/freeradius:ro
       # - logstash_config:/usr/share/logstash/config
-      - $LOGSTASH_CONFIG_DIR/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - $LOGSTASH_CONFIG_DIR/pipelines.yml:/usr/share/logstash/config/pipelines.yml
-      # - $LOGSTASH_PIPELINE_DIR/freeradius_logs.conf:/usr/share/pipeline/freeradius_logs.conf
     # entrypoint: ["sleep", "infinity"]
     ports:
       - "5044:5044"
@@ -124,14 +122,18 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 72
+      KAFKA_MESSAGE_MAX_BYTES: 1000012
     ports:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
-      - $KAFKA_NODE_1_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      # - $KAFKA_NODE_1_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -147,17 +149,68 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 72
+      KAFKA_MESSAGE_MAX_BYTES: 1000012
     ports:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
-      - $KAFKA_NODE_2_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      # - $KAFKA_NODE_2_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
+  
+  kafka-3:
+    image: apache/kafka:$KAFKA_VERSION
+    container_name: kafka-3
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-3:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 72
+      KAFKA_MESSAGE_MAX_BYTES: 1000012
+    ports:
+      - "39092:9092"
+    volumes:
+      - kafka-data-3:/var/lib/kafka
+      # - $KAFKA_NODE_3_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+    networks:
+      - kafka_network
+      - elastic_network
+
+  # init-kafka:
+  #   image: apache/kafka:$KAFKA_VERSION
+  #   container_name: init-kafka
+  #   depends_on:
+  #     - kafka-1
+  #     - kafka-2
+  #   entrypoint: [ '/bin/sh', '-c' ]
+  #   command: |
+  #     "
+  #     # Block until Kafka is reachable
+  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --list
+      
+  #     echo -e 'Creating Kafka topics...'
+  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --create --if-not-exists --topic freeradius_auth_accept --replication-factor 1 --partitions 1
+  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --create --if-not-exists --topic freeradius_auth_reject --replication-factor 1 --partitions 1
+      
+  #     echo -e 'Successfully created Kafka topics:'
+  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092  --list
+  #     "
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:$ELK_VERSION
