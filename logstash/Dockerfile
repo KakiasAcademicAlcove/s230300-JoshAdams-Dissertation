@@ -11,3 +11,4 @@ COPY --chown=logstash:root ./config/startup.options /usr/share/logstash/config/s
 # Pipeline configurations
 COPY --chown=logstash:root ./pipeline/freeradius_auth_accept.conf /usr/share/logstash/pipeline/freeradius_auth_accept.conf
 COPY --chown=logstash:root ./pipeline/freeradius_auth_reject.conf /usr/share/logstash/pipeline/freeradius_auth_reject.conf
+COPY --chown=logstash:root ./pipeline/freeradius_auth_to_es.conf /usr/share/logstash/pipeline/freeradius_auth_to_es.conf

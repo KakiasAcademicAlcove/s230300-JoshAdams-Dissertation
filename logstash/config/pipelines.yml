@@ -6,3 +6,5 @@
   path.config: "/usr/share/logstash/pipeline/freeradius_auth_accept.conf"
 - pipeline.id: freeradius_reject_logs
   path.config: "/usr/share/logstash/pipeline/freeradius_auth_reject.conf"
+- pipeline.id: freeradius_auth_to_es
+  path.config: "/usr/share/logstash/pipeline/freeradius_auth_to_es.conf"
