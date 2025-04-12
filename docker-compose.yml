@@ -91,8 +91,8 @@ services:
       - "1813:1813/udp"
     networks:
       - "kafka_network"
-    depends_on:
-      - apm-server
+    # depends_on:
+      # - apm-server
 
   logstash:
     build: ./logstash
@@ -234,6 +234,7 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     volumes:
       - $KIBANA_CONFIG_DIR/kibana.yml:/usr/share/kibana/config/kibana.yml
+      # - ./kibana/setup:/usr/share/kibana/setup
     ports:
       - "5601:5601"
     networks:
@@ -241,29 +242,48 @@ services:
     depends_on:
       - elasticsearch
 
-  metricbeat:
-    image: docker.elastic.co/beats/metricbeat:$ELK_VERSION
-    container_name: metricbeat
+  kibana-setup:
+    user: root
+    image: curlimages/curl:$CURL_VERSION
+    container_name: kibana-setup
     volumes:
-      - $METRICBEAT_CONFIG_DIR/metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
-    # ports:
+      - ./kibana/setup:/kibana_setup
+    entrypoint: ["/bin/sh", "-c"]
+    # entrypoint: ["sleep", "infinity"]
+    command: >
+      "
+      apk add --no-cache bash &&
+      chmod +x /kibana_setup/import_saved_objects.sh &&
+      /kibana_setup/import_saved_objects.sh
+      "
+    depends_on:
+      - kibana
     networks:
       - elastic_network
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:$ELK_VERSION
-    container_name: filebeat
-    volumes:
-      - $FILEBEAT_CONFIG_DIR/filebeat.yml:/usr/share/filebeat/config/filebeat.yml
-    # ports:
-    networks:
-      - elastic_network
+  # metricbeat:
+  #   image: docker.elastic.co/beats/metricbeat:$ELK_VERSION
+  #   container_name: metricbeat
+  #   volumes:
+  #     - $METRICBEAT_CONFIG_DIR/metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
+  #   # ports:
+  #   networks:
+  #     - elastic_network
+
+  # filebeat:
+  #   image: docker.elastic.co/beats/filebeat:$ELK_VERSION
+  #   container_name: filebeat
+  #   volumes:
+  #     - $FILEBEAT_CONFIG_DIR/filebeat.yml:/usr/share/filebeat/config/filebeat.yml
+  #   # ports:
+  #   networks:
+  #     - elastic_network
   
-  apm-server:
-    image: docker.elastic.co/apm/apm-server:$ELK_VERSION
-    container_name: apm-server
-    volumes:
-      - $APM_CONFIG_DIR/apm-server.yml:/usr/share/apm/config/apm-server.yml
-    # ports:
-    networks:
-      - elastic_network
+  # apm-server:
+  #   image: docker.elastic.co/apm/apm-server:$ELK_VERSION
+  #   container_name: apm-server
+  #   volumes:
+  #     - $APM_CONFIG_DIR/apm-server.yml:/usr/share/apm/config/apm-server.yml
+  #   # ports:
+  #   networks:
+  #     - elastic_network

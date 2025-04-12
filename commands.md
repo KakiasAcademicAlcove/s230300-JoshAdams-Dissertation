@@ -38,3 +38,6 @@ git reset HEAD^
 cd /opt/kafka/bin && ./kafka-topics.sh --create --topic freeradius_auth_accept --bootstrap-server kafka-1:9092 --partitions 3 --replication-factor 1
 cd /opt/kafka/bin && ./kafka-console-consumer.sh --bootstrap-server kafka-1:9092 --topic freeradius_auth_accept --from-beginning
 cd /opt/kafka/bin && ./kafka-topics.sh --bootstrap-server kafka-1:9092 --list
+
+# Kibana
+View indexes - http://localhost:5601/app/management/data/index_management/indices
