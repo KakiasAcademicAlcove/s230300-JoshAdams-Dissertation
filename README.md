@@ -14,10 +14,15 @@ RUN rm -f /tmp/cinc.deb
 
 RUN chef-client --version
 
-# Run integration tests:
+# Run test suite:
 docker compose -f docker-compose.yml -f docker-compose.test.yml up --abort-on-container-exit
 
-# Bring containers up:
+Check logs in: docker logs -f inspec
+
+# Setup containers for the first time:
+docker-compose up -d --build --profile setup
+
+# Bring containers up after initial build:
 docker-compose up -d
 
 # Bring containers down:

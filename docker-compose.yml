@@ -235,6 +235,7 @@ services:
         condition: service_healthy
     networks:
       - elastic_network
+    profiles: ["setup"]
 
   logstash:
     build: ./logstash

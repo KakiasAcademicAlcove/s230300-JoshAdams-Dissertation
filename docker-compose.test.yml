@@ -5,17 +5,12 @@ networks:
     external: false
 
 services:
+
   inspec:
     image: cincproject/workstation:$CINC_INSPEC_VERSION
     container_name: inspec
     depends_on:
       - freeradius
-      - logstash
-      - kafka-1
-      - kafka-2
-      - kafka-3
-      - elasticsearch
-      - kibana
     volumes: 
       - ./testing/inspec:/share
       - /var/run/docker.sock:/var/run/docker.sock
