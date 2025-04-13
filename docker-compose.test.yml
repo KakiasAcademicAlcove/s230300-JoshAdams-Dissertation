@@ -21,14 +21,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: >
       sh -c "
-             echo "Running InSpec tests..."
              inspec exec /share/freeradius --target docker://freeradius --no-create-lockfile &&
              inspec exec /share/logstash --target docker://logstash --no-create-lockfile &&
              inspec exec /share/kafka --target docker://kafka-1 --no-create-lockfile &&
              inspec exec /share/kafka --target docker://kafka-2 --no-create-lockfile &&
              inspec exec /share/kafka --target docker://kafka-3 --no-create-lockfile &&
              inspec exec /share/elasticsearch --target docker://elasticsearch --no-create-lockfile &&
-             inspec exec /share/kibana --target docker://kibana --no-create-lockfile
+             inspec exec /share/kibana --target docker://kibana --no-create-lockfile &&
              echo "All tests passed! Gracefully stopping containers..."
             "
     # entrypoint: ["sleep", "infinity"]

@@ -13,3 +13,15 @@ RUN apt-get install -f -y
 RUN rm -f /tmp/cinc.deb
 
 RUN chef-client --version
+
+# Run integration tests:
+docker compose -f docker-compose.yml -f docker-compose.test.yml up --abort-on-container-exit
+
+# Bring containers up:
+docker-compose up -d
+
+# Bring containers down:
+docker-compose down
+
+# Destroy everything:
+docker-compose down -v
