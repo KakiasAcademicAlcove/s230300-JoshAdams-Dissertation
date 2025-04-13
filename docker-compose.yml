@@ -75,43 +75,6 @@ networks:
 
 services:
 
-  freeradius:
-    build: ./freeradius
-    container_name: freeradius
-    volumes:
-      - freeradius_logs:$FREERADIUS_LOG_DIR
-      - type: bind
-        source: $FREERADIUS_DIR/radiusd.conf
-        target: /etc/freeradius/radiusd.conf
-      - type: bind
-        source: $FREERADIUS_DIR/users
-        target: /etc/freeradius/users
-    entrypoint: ["freeradius", "-f"]
-    ports:
-      - "1812:1812/udp"
-      - "1813:1813/udp"
-    networks:
-      - "kafka_network"
-    # depends_on:
-      # - apm-server
-
-  logstash:
-    build: ./logstash
-    container_name: logstash
-    volumes:
-      - freeradius_logs:/var/log/freeradius:ro
-      # - logstash_config:/usr/share/logstash/config
-    # entrypoint: ["sleep", "infinity"]
-    ports:
-      - "5044:5044"
-    networks:
-      - kafka_network
-      - elastic_network
-    depends_on:
-      - kafka-1
-      - kafka-2
-      - elasticsearch
-
   kafka-1:
     image: apache/kafka:$KAFKA_VERSION
     container_name: kafka-1
@@ -138,6 +101,11 @@ services:
     networks:
       - kafka_network
       - elastic_network
+    healthcheck:
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
 
   kafka-2:
     image: apache/kafka:$KAFKA_VERSION
@@ -165,6 +133,11 @@ services:
     networks:
       - kafka_network
       - elastic_network
+    healthcheck:
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-2:9092 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
   
   kafka-3:
     image: apache/kafka:$KAFKA_VERSION
@@ -192,6 +165,119 @@ services:
     networks:
       - kafka_network
       - elastic_network
+    healthcheck:
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-3:9092 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:$ELK_VERSION
+    container_name: elasticsearch
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      # - $ELASTICSEARCH_CONFIG_DIR/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - elastic_network
+    healthcheck:
+      test: curl -fs http://localhost:9200/_cluster/health || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:$ELK_VERSION
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - $KIBANA_CONFIG_DIR/kibana.yml:/usr/share/kibana/config/kibana.yml
+      # - ./kibana/setup:/usr/share/kibana/setup
+    ports:
+      - "5601:5601"
+    networks:
+      - elastic_network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: 
+        [
+         "CMD-SHELL",
+         "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana-setup:
+    user: root
+    image: curlimages/curl:$CURL_VERSION
+    container_name: kibana-setup
+    volumes:
+      - ./kibana/setup:/kibana_setup
+    entrypoint: ["/bin/sh", "-c"]
+    # entrypoint: ["sleep", "infinity"]
+    command: >
+      "
+      apk add --no-cache bash &&
+      chmod +x /kibana_setup/import_saved_objects.sh &&
+      /kibana_setup/import_saved_objects.sh
+      "
+    depends_on:
+      kibana:
+        condition: service_healthy
+    networks:
+      - elastic_network
+
+  logstash:
+    build: ./logstash
+    container_name: logstash
+    volumes:
+      - freeradius_logs:/var/log/freeradius:ro
+      # - logstash_config:/usr/share/logstash/config
+    # entrypoint: ["sleep", "infinity"]
+    ports:
+      - "5044:5044"
+    networks:
+      - kafka_network
+      - elastic_network
+    depends_on:
+      kibana:
+        condition: service_healthy
+    healthcheck:
+      test: curl -fs http://localhost:9600 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  freeradius:
+    build: ./freeradius
+    container_name: freeradius
+    volumes:
+      - freeradius_logs:$FREERADIUS_LOG_DIR
+      - type: bind
+        source: $FREERADIUS_DIR/radiusd.conf
+        target: /etc/freeradius/radiusd.conf
+      - type: bind
+        source: $FREERADIUS_DIR/users
+        target: /etc/freeradius/users
+    entrypoint: ["freeradius", "-f"]
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    networks:
+      - "kafka_network"
+    depends_on:
+      logstash:
+        condition:
+          service_healthy
 
   # init-kafka:
   #   image: apache/kafka:$KAFKA_VERSION
@@ -212,55 +298,6 @@ services:
   #     echo -e 'Successfully created Kafka topics:'
   #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092  --list
   #     "
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:$ELK_VERSION
-    container_name: elasticsearch
-    environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-      # - $ELASTICSEARCH_CONFIG_DIR/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-    networks:
-      - elastic_network
-  
-  kibana:
-    image: docker.elastic.co/kibana/kibana:$ELK_VERSION
-    container_name: kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    volumes:
-      - $KIBANA_CONFIG_DIR/kibana.yml:/usr/share/kibana/config/kibana.yml
-      # - ./kibana/setup:/usr/share/kibana/setup
-    ports:
-      - "5601:5601"
-    networks:
-      - elastic_network
-    depends_on:
-      - elasticsearch
-
-  # kibana-setup:
-  #   user: root
-  #   image: curlimages/curl:$CURL_VERSION
-  #   container_name: kibana-setup
-  #   volumes:
-  #     - ./kibana/setup:/kibana_setup
-  #   entrypoint: ["/bin/sh", "-c"]
-  #   # entrypoint: ["sleep", "infinity"]
-  #   command: >
-  #     "
-  #     apk add --no-cache bash &&
-  #     chmod +x /kibana_setup/import_saved_objects.sh &&
-  #     /kibana_setup/import_saved_objects.sh
-  #     "
-  #   depends_on:
-  #     - kibana
-  #   networks:
-  #     - elastic_network
 
   # metricbeat:
   #   image: docker.elastic.co/beats/metricbeat:$ELK_VERSION
