@@ -74,6 +74,7 @@ networks:
     driver: bridge
 
 services:
+
   freeradius:
     build: ./freeradius
     container_name: freeradius
@@ -242,24 +243,24 @@ services:
     depends_on:
       - elasticsearch
 
-  kibana-setup:
-    user: root
-    image: curlimages/curl:$CURL_VERSION
-    container_name: kibana-setup
-    volumes:
-      - ./kibana/setup:/kibana_setup
-    entrypoint: ["/bin/sh", "-c"]
-    # entrypoint: ["sleep", "infinity"]
-    command: >
-      "
-      apk add --no-cache bash &&
-      chmod +x /kibana_setup/import_saved_objects.sh &&
-      /kibana_setup/import_saved_objects.sh
-      "
-    depends_on:
-      - kibana
-    networks:
-      - elastic_network
+  # kibana-setup:
+  #   user: root
+  #   image: curlimages/curl:$CURL_VERSION
+  #   container_name: kibana-setup
+  #   volumes:
+  #     - ./kibana/setup:/kibana_setup
+  #   entrypoint: ["/bin/sh", "-c"]
+  #   # entrypoint: ["sleep", "infinity"]
+  #   command: >
+  #     "
+  #     apk add --no-cache bash &&
+  #     chmod +x /kibana_setup/import_saved_objects.sh &&
+  #     /kibana_setup/import_saved_objects.sh
+  #     "
+  #   depends_on:
+  #     - kibana
+  #   networks:
+  #     - elastic_network
 
   # metricbeat:
   #   image: docker.elastic.co/beats/metricbeat:$ELK_VERSION

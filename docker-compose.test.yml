@@ -1,0 +1,37 @@
+version: "3.8"
+
+networks:
+  test_network:
+    external: false
+
+services:
+  inspec:
+    image: cincproject/workstation:$CINC_INSPEC_VERSION
+    container_name: inspec
+    depends_on:
+      - freeradius
+      - logstash
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - elasticsearch
+      - kibana
+    volumes: 
+      - ./testing/inspec:/share
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: >
+      sh -c "
+             echo "Running InSpec tests..."
+             inspec exec /share/freeradius --target docker://freeradius --no-create-lockfile &&
+             inspec exec /share/logstash --target docker://logstash --no-create-lockfile &&
+             inspec exec /share/kafka --target docker://kafka-1 --no-create-lockfile &&
+             inspec exec /share/kafka --target docker://kafka-2 --no-create-lockfile &&
+             inspec exec /share/kafka --target docker://kafka-3 --no-create-lockfile &&
+             inspec exec /share/elasticsearch --target docker://elasticsearch --no-create-lockfile &&
+             inspec exec /share/kibana --target docker://kibana --no-create-lockfile
+             echo "All tests passed! Gracefully stopping containers..."
+            "
+    # entrypoint: ["sleep", "infinity"]
+    networks:
+      - test_network
+    # profile: test

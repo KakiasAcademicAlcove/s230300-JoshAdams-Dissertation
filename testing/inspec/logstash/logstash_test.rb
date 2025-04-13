@@ -23,14 +23,8 @@ files = %w[
     config/startup.options
     pipeline/freeradius_auth_accept.conf
     pipeline/freeradius_auth_reject.conf
+    pipeline/freeradius_auth_to_es.conf
 ]
-
-describe file("/usr/share/logstash/pipeline/radius_logs.conf") do
-    it { should exist}
-    its('owner') { should eq 'logstash' }
-    its('group') { should eq 'root' }
-    its('mode') { should eq '0644' }
-end
 
 users = %w[
     logstash
@@ -53,7 +47,7 @@ directories.each do |dir|
 end
 
 files.each do |file|
-    describe file("/apps/opt/logstash-8.2.2/#{file}") do
+    describe file("/usr/share/logstash/#{file}") do
       it { should exist }
       it { should be_owned_by     'logstash' }
       it { should be_grouped_into 'root' }

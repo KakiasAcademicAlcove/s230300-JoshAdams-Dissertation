@@ -1,76 +1,26 @@
 variables:
 
 stages:
-  - docker-compose
-  - chef
-  - inspec
+  - integration-test
 
-cache: &global_cache
-    key: $CI_PROJECT_NAME
-    paths:
-        - artifacts/
+variables:
+  DOCKER_HOST: tcp://docker:2375/
 
-docker-compose:
-  stage: docker-compose
+services:
+  - docker:dind
+
+before_script:
+  - echo "Starting integration testing..."
+
+integration_test:
+  stage: integration-test
   script:
-    - docker-compose up -d --build
-  when: manual
-  artifacts: 
-    when: always
-    path: artifacts/logs
+    - echo "Spinning up containers..."
+    - docker-compose -f docker-compose.test.yml up -d
+    - sleep 30 # This gives services time to boot, in theory won't be required as this will be done by container health checks
+    - echo "Running InSpec tests..."
+    - inspec exec tests/inspec
+  # allow_failure: false
 
-freeradius-chef:
-  stage: chef
-  script:
-    - docker exec freeradius1 chef-client -j /path/to/node/file  -E freeradius
-    - docker exec freeradius2 chef-client -j /path/to/node/file  -E freeradius
-    - docker exec freeradius3 chef-client -j /path/to/node/file  -E freeradius
-
-logstash-chef:
-  stage: chef
-  script:
-    - docker exec logstash chef-client -j /path/to/node/file  -E logstash
-
-kafka-chef:
-  stage: chef
-  script:
-    - docker exec kafka-node-1 chef-client -j /path/to/node/file  -E kafka
-    - docker exec kafka-node-2 chef-client -j /path/to/node/file -E kafka
-
-elasticsearch-chef:
-  stage: chef
-  script:
-    - docker exec elasticsearch chef-client -j /path/to/node/file -E elasticsearch
-
-kibana-chef:
-  stage: chef
-  script:
-    - docker exec kibana chef-client -j /path/to/node/file -E kibana
-
-freeradius-inspec:
-  stage: inspec
-  script:
-    - docker exec freeradius1 inspec exec /path/to/inspec/profile -b
-    - docker exec freeradius2 inspec exec /path/to/inspec/profile -b
-    - docker exec freeradius3 inspec exec /path/to/inspec/profile -b
-
-logstash-inspec:
-  stage: inspec
-  script:
-    - - docker exec logstash inspec exec /path/to/inspec/profile -b
-
-kafka-inspec:
-  stage: inspec
-  script:
-    - docker exec kafka-node-1 inspec exec /path/to/inspec/profile -b
-    - docker exec kafka-node-2 inspec exec /path/to/inspec/profile -b
-
-elasticsearch-inspec:
-  stage: inspec
-  script:
-    - docker exec elasticsearch inspec exec /path/to/inspec/profile -b
-
-kibana-inspec:
-  stage: inspec
-  script:
-    - docker exec kibana inspec exec /path/to/inspec/profile -b
+after_script:
+  - echo "Testing complete."
