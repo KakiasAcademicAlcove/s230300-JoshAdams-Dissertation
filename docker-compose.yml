@@ -66,6 +66,7 @@ volumes:
   kafka-data-2:
   kafka-data-3:
   elasticsearch_data:
+  metricbeat_data:
 
 networks:
   kafka_network:
@@ -279,6 +280,32 @@ services:
       logstash:
         condition:
           service_healthy
+  
+  metricbeat:
+    container_name: metricbeat
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/beats/metricbeat:${ELK_VERSION}
+    user: root
+    volumes:
+      #  - certs:/usr/share/metricbeat/certs
+      - metricbeat_data:/usr/share/metricbeat/data
+      - "./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+    environment:
+     #  - ELASTIC_USER=elastic
+     #  - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=http://elasticsearch:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash:9600
+    networks:
+      - elastic_network
 
   # init-kafka:
   #   image: apache/kafka:$KAFKA_VERSION
@@ -299,15 +326,6 @@ services:
   #     echo -e 'Successfully created Kafka topics:'
   #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092  --list
   #     "
-
-  # metricbeat:
-  #   image: docker.elastic.co/beats/metricbeat:$ELK_VERSION
-  #   container_name: metricbeat
-  #   volumes:
-  #     - $METRICBEAT_CONFIG_DIR/metricbeat.yml:/usr/share/metricbeat/config/metricbeat.yml
-  #   # ports:
-  #   networks:
-  #     - elastic_network
 
   # filebeat:
   #   image: docker.elastic.co/beats/filebeat:$ELK_VERSION
