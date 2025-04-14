@@ -19,25 +19,25 @@ services:
     image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-1
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: controller,broker
-      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-1:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_NUM_PARTITIONS: 1
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_LOG_RETENTION_HOURS: 72
-      KAFKA_MESSAGE_MAX_BYTES: 1000012
+      KAFKA_NODE_ID: ${KAFKA_NODE_1_NODE_ID}
+      KAFKA_PROCESS_ROLES: ${KAFKA_NODE_1_PROCESS_ROLES}
+      KAFKA_LISTENERS: ${KAFKA_NODE_1_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_NODE_1_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_NODE_1_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_CONTROLLER_LISTENER_NAMES: ${KAFKA_NODE_1_CONTROLLER_LISTENER_NAMES}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_NODE_1_INTER_BROKER_LISTENER_NAME}
+      KAFKA_CONTROLLER_QUORUM_VOTERS: ${KAFKA_NODE_1_CONTROLLER_QUORUM_VOTERS}
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: ${KAFKA_NODE_1_GROUP_INITIAL_REBALANCE_DELAY_MS}
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: ${KAFKA_NODE_1_AUTO_CREATE_TOPICS_ENABLE}
+      KAFKA_NUM_PARTITIONS: ${KAFKA_NODE_1_NUM_PARTITIONS}
+      KAFKA_DEFAULT_REPLICATION_FACTOR: ${KAFKA_NODE_1_DEFAULT_REPLICATION_FACTOR}
+      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_NODE_1_LOG_RETENTION_HOURS}
+      KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_NODE_1_MESSAGE_MAX_BYTES}
     ports:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
-      # - $KAFKA_NODE_1_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      - $KAFKA_NODE_1_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -48,28 +48,28 @@ services:
       retries: 120
 
   kafka-2:
-    image: apache/kafka:$KAFKA_VERSION
+    image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-2
     environment:
-      KAFKA_NODE_ID: 2
-      KAFKA_PROCESS_ROLES: controller,broker
-      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-2:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_NUM_PARTITIONS: 1
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_LOG_RETENTION_HOURS: 72
-      KAFKA_MESSAGE_MAX_BYTES: 1000012
+      KAFKA_NODE_ID: ${KAFKA_NODE_2_NODE_ID}
+      KAFKA_PROCESS_ROLES: ${KAFKA_NODE_2_PROCESS_ROLES}
+      KAFKA_LISTENERS: ${KAFKA_NODE_2_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_NODE_2_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_NODE_2_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_CONTROLLER_LISTENER_NAMES: ${KAFKA_NODE_2_CONTROLLER_LISTENER_NAMES}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_NODE_2_INTER_BROKER_LISTENER_NAME}
+      KAFKA_CONTROLLER_QUORUM_VOTERS: ${KAFKA_NODE_2_CONTROLLER_QUORUM_VOTERS}
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: ${KAFKA_NODE_2_GROUP_INITIAL_REBALANCE_DELAY_MS}
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: ${KAFKA_NODE_2_AUTO_CREATE_TOPICS_ENABLE}
+      KAFKA_NUM_PARTITIONS: ${KAFKA_NODE_2_NUM_PARTITIONS}
+      KAFKA_DEFAULT_REPLICATION_FACTOR: ${KAFKA_NODE_2_DEFAULT_REPLICATION_FACTOR}
+      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_NODE_2_LOG_RETENTION_HOURS}
+      KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_NODE_2_MESSAGE_MAX_BYTES}
     ports:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
-      # - $KAFKA_NODE_2_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      - $KAFKA_NODE_2_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -80,28 +80,28 @@ services:
       retries: 120
   
   kafka-3:
-    image: apache/kafka:$KAFKA_VERSION
+    image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-3
     environment:
-      KAFKA_NODE_ID: 3
-      KAFKA_PROCESS_ROLES: controller,broker
-      KAFKA_LISTENERS: 'CONTROLLER://:9093,PLAINTEXT://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-3:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_NUM_PARTITIONS: 1
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_LOG_RETENTION_HOURS: 72
-      KAFKA_MESSAGE_MAX_BYTES: 1000012
+      KAFKA_NODE_ID: ${KAFKA_NODE_3_NODE_ID}
+      KAFKA_PROCESS_ROLES: ${KAFKA_NODE_3_PROCESS_ROLES}
+      KAFKA_LISTENERS: ${KAFKA_NODE_3_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_NODE_3_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_NODE_3_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_CONTROLLER_LISTENER_NAMES: ${KAFKA_NODE_3_CONTROLLER_LISTENER_NAMES}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_NODE_3_INTER_BROKER_LISTENER_NAME}
+      KAFKA_CONTROLLER_QUORUM_VOTERS: ${KAFKA_NODE_3_CONTROLLER_QUORUM_VOTERS}
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: ${KAFKA_NODE_3_GROUP_INITIAL_REBALANCE_DELAY_MS}
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: ${KAFKA_NODE_3_AUTO_CREATE_TOPICS_ENABLE}
+      KAFKA_NUM_PARTITIONS: ${KAFKA_NODE_3_NUM_PARTITIONS}
+      KAFKA_DEFAULT_REPLICATION_FACTOR: ${KAFKA_NODE_3_DEFAULT_REPLICATION_FACTOR}
+      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_NODE_3_LOG_RETENTION_HOURS}
+      KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_NODE_3_MESSAGE_MAX_BYTES}
     ports:
       - "39092:9092"
     volumes:
       - kafka-data-3:/var/lib/kafka
-      # - $KAFKA_NODE_3_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      - $KAFKA_NODE_3_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -112,7 +112,7 @@ services:
       retries: 120
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:$ELK_VERSION
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
     container_name: elasticsearch
     environment:
       - xpack.security.enabled=false
@@ -132,13 +132,12 @@ services:
       retries: 120
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:$ELK_VERSION
+    image: docker.elastic.co/kibana/kibana:${ELK_VERSION}
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     volumes:
       - $KIBANA_CONFIG_DIR/kibana.yml:/usr/share/kibana/config/kibana.yml
-      # - ./kibana/setup:/usr/share/kibana/setup
     ports:
       - "5601:5601"
     networks:
@@ -157,13 +156,12 @@ services:
       retries: 120
 
   kibana-setup:
-    user: root
-    image: curlimages/curl:$CURL_VERSION
+    image: curlimages/curl:${CURL_VERSION}
     container_name: kibana-setup
+    user: root
     volumes:
       - ./kibana/setup:/kibana_setup
     entrypoint: ["/bin/sh", "-c"]
-    # entrypoint: ["sleep", "infinity"]
     command: >
       "
       apk add --no-cache bash &&
@@ -183,7 +181,6 @@ services:
     volumes:
       - freeradius_logs:/var/log/freeradius:ro
       # - logstash_config:/usr/share/logstash/config
-    # entrypoint: ["sleep", "infinity"]
     ports:
       - "5044:5044"
     networks:
