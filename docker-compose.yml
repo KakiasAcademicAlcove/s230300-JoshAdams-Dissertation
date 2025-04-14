@@ -1,66 +1,6 @@
 version: "3.8"
 
 volumes:
-  freeradius_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $FREERADIUS_DIR
-      o: uid=root,gid=root,bind
-  # logstash_config:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: $LOGSTASH_CONFIG_DIR
-  # o: uid=root,gid=root,bind
-  logstash_pipelines:
-    driver: local
-    driver_opts:
-      type: none
-      device: $LOGSTASH_PIPELINE_DIR
-      o: uid=root,gid=root,bind
-  kafka_node_1_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $KAFKA_NODE_1_CONFIG_DIR
-      o: uid=root,gid=root,bind
-  kafka_node_2_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $KAFKA_NODE_2_CONFIG_DIR
-      o: uid=root,gid=root,bind
-  elasticsearch_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $ELASTICSEARCH_CONFIG_DIR
-      o: uid=root,gid=root,bind
-  kibana_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $KIBANA_CONFIG_DIR
-      o: uid=root,gid=root,bind
-  metricbeat_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $METRICBEAT_CONFIG_DIR
-      o: uid=root,gid=root,bind
-  filebeat_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $FILEBEAT_CONFIG_DIR
-      o: uid=root,gid=root,bind
-  apm_config:
-    driver: local
-    driver_opts:
-      type: none
-      device: $APM_CONFIG_DIR
-      o: uid=root,gid=root,bind
   freeradius_logs:
   kafka-data-1:
   kafka-data-2:
@@ -75,9 +15,8 @@ networks:
     driver: bridge
 
 services:
-
   kafka-1:
-    image: apache/kafka:$KAFKA_VERSION
+    image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-1
     environment:
       KAFKA_NODE_ID: 1

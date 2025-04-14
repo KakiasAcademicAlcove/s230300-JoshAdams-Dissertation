@@ -29,4 +29,4 @@ docker-compose up -d
 docker-compose down
 
 # Destroy everything:
-docker-compose down -v
+docker compose -f docker-compose.yml -f docker-compose.test.yml down -v

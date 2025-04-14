@@ -5,14 +5,17 @@ networks:
     external: false
 
 services:
-
   inspec:
-    image: cincproject/workstation:$CINC_INSPEC_VERSION
+    image: cincproject/workstation:${CINC_WORKSTATION_INSPEC_VERSION}
     container_name: inspec
     depends_on:
       - freeradius
     volumes: 
-      - ./testing/inspec:/share
+      - ./elasticsearch/test/inspec:/share/elasticsearch
+      - ./freeradius/test/inspec:/share/freeradius
+      - ./kafka/test/inspec:/share/kafka
+      - ./kibana/test/inspec:/share/kibana
+      - ./logstash/test/inspec:/share/logstash
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: >
       sh -c "
@@ -25,7 +28,5 @@ services:
              inspec exec /share/kibana --target docker://kibana --no-create-lockfile &&
              echo "All tests passed! Gracefully stopping containers..."
             "
-    # entrypoint: ["sleep", "infinity"]
     networks:
       - test_network
-    # profile: test
