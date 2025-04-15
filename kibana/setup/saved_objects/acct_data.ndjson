@@ -1,0 +1,2 @@
+{"attributes":{"allowHidden":false,"fieldAttrs":"{}","fieldFormatMap":"{}","fields":"[]","name":"Acct data","runtimeFieldMap":"{}","sourceFilters":"[]","timeFieldName":"@timestamp","title":"acct-logs-*"},"coreMigrationVersion":"8.8.0","created_at":"2025-04-15T09:09:04.772Z","id":"7b36b48b-1b56-4985-8201-665219c00cba","managed":false,"references":[],"type":"index-pattern","typeMigrationVersion":"8.0.0","updated_at":"2025-04-15T09:09:04.772Z","version":"WzUsMV0="}
+{"excludedObjects":[],"excludedObjectsCount":0,"exportedCount":1,"missingRefCount":0,"missingReferences":[]}

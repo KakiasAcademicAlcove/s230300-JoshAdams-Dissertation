@@ -40,13 +40,13 @@ detail {
         #  AND use a separate directory (reader2, reader3, etc.) for each
         #  reader.
         #
-        filename = ${radacctdir}/%{%{Packet-Src-IP-Address}:-%{Packet-Src-IPv6-Address}}/detail-%Y%m%d
+        # filename = ${radacctdir}/%{%{Packet-Src-IP-Address}:-%{Packet-Src-IPv6-Address}}/detail-%Y%m%d
 
         #
         #  If you are using radrelay, delete the above line for "file",
         #  and use this one instead:
         #
-#       filename = ${radacctdir}/detail
+        filename = ${radacctdir}/detail
 
         #
         #  Most file systems can handly nearly the full range of UTF-8
@@ -62,7 +62,8 @@ detail {
         #  information about users.  So by keeping the file
         #  permissions restrictive, we can prevent unwanted
         #  people from seeing that information.
-        permissions = 0600
+        # permissions = 0600
+        permissions = 0644
 
         # The Unix group of the log file.
         #

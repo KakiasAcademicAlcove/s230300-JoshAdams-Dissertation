@@ -2,9 +2,13 @@
 # For more information on multiple pipelines, see the documentation:
 #   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
 
-- pipeline.id: freeradius_auth_logs
-  path.config: "/usr/share/logstash/pipeline/freeradius_auth_accept.conf"
-- pipeline.id: freeradius_reject_logs
-  path.config: "/usr/share/logstash/pipeline/freeradius_auth_reject.conf"
+- pipeline.id: freeradius_auth_accept_logs_to_kafka
+  path.config: "/usr/share/logstash/pipeline/freeradius_auth_accept_to_kafka.conf"
+- pipeline.id: freeradius_auth_reject_logs_to_kafka
+  path.config: "/usr/share/logstash/pipeline/freeradius_auth_reject_to_kafka.conf"
 - pipeline.id: freeradius_auth_to_es
   path.config: "/usr/share/logstash/pipeline/freeradius_auth_to_es.conf"
+- pipeline.id: freeradius_acct_to_kafka
+  path.config: "/usr/share/logstash/pipeline/freeradius_acct_to_kafka.conf"
+- pipeline.id: freeradius_acct_to_es
+  path.config: "/usr/share/logstash/pipeline/freeradius_acct_to_es.conf"

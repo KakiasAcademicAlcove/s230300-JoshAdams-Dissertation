@@ -28,10 +28,14 @@ cd /opt/cinc/cookbooks/freeradius/
 chef-client --local-mode --override-runlist "recipe[freeradius::default]" --why-run
 chef-client --local-mode --override-runlist "recipe[freeradius::default]"
 
-# FreeRADIUS
+## FreeRADIUS
+# Auth
 radtest testuser password 127.0.0.1 1812 testing123
 
-# Git
+# Acct
+cd /etc/freeradius && radclient localhost acct testing123 < acct-request-1.txt
+
+# Git - reset a commit
 git reset HEAD^
 
 # Kafka

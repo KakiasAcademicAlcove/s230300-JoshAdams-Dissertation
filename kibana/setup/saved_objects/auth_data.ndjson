@@ -1,0 +1,2 @@
+{"attributes":{"allowHidden":false,"fieldAttrs":"{}","fieldFormatMap":"{}","fields":"[]","name":"Auth data","runtimeFieldMap":"{}","sourceFilters":"[]","timeFieldName":"@timestamp","title":"auth-logs-*"},"coreMigrationVersion":"8.8.0","created_at":"2025-04-12T15:50:40.852Z","id":"fd0dd1ff-1e97-457e-ada2-a66186f60233","managed":false,"references":[],"type":"index-pattern","typeMigrationVersion":"8.0.0","updated_at":"2025-04-12T15:50:40.852Z","version":"WzUsMV0="}
+{"excludedObjects":[],"excludedObjectsCount":0,"exportedCount":1,"missingRefCount":0,"missingReferences":[]}

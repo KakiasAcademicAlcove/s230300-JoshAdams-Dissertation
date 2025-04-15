@@ -37,7 +37,7 @@ services:
       - "19092:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
-      - $KAFKA_NODE_1_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      - ${KAFKA_NODE_1_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -69,7 +69,7 @@ services:
       - "29092:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
-      - $KAFKA_NODE_2_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      - ${KAFKA_NODE_2_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -101,7 +101,7 @@ services:
       - "39092:9092"
     volumes:
       - kafka-data-3:/var/lib/kafka
-      - $KAFKA_NODE_3_CONFIG_DIR/server.properties:/opt/kafka/config/server.properties
+      - ${KAFKA_NODE_3_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka_network
       - elastic_network
@@ -122,7 +122,7 @@ services:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-      # - $ELASTICSEARCH_CONFIG_DIR/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ${ELASTICSEARCH_CONFIG_DIR}/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - elastic_network
     healthcheck:
@@ -137,7 +137,7 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     volumes:
-      - $KIBANA_CONFIG_DIR/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ${KIBANA_CONFIG_DIR}/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - "5601:5601"
     networks:
@@ -173,7 +173,8 @@ services:
         condition: service_healthy
     networks:
       - elastic_network
-    profiles: ["setup"]
+    profiles:
+      - setup
 
   logstash:
     build: ./logstash
@@ -189,6 +190,12 @@ services:
     depends_on:
       kibana:
         condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
     healthcheck:
       test: curl -fs http://localhost:9600 || exit 1
       interval: 10s
@@ -199,13 +206,16 @@ services:
     build: ./freeradius
     container_name: freeradius
     volumes:
-      - freeradius_logs:$FREERADIUS_LOG_DIR
+      - freeradius_logs:${FREERADIUS_LOG_DIR}
       - type: bind
-        source: $FREERADIUS_DIR/radiusd.conf
+        source: ${FREERADIUS_CONFIG_DIR}/radiusd.conf
         target: /etc/freeradius/radiusd.conf
       - type: bind
-        source: $FREERADIUS_DIR/users
+        source: ${FREERADIUS_CONFIG_DIR}/users
         target: /etc/freeradius/users
+      - type: bind
+        source: ${FREERADIUS_CONFIG_DIR}/mods-available/detail
+        target: /etc/freeradius/mods-available/detail
     entrypoint: ["freeradius", "-f"]
     ports:
       - "1812:1812/udp"
@@ -217,31 +227,42 @@ services:
         condition:
           service_healthy
   
-  metricbeat:
-    container_name: metricbeat
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-      kibana:
-        condition: service_healthy
-    image: docker.elastic.co/beats/metricbeat:${ELK_VERSION}
-    user: root
-    volumes:
-      #  - certs:/usr/share/metricbeat/certs
-      - metricbeat_data:/usr/share/metricbeat/data
-      - "./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
-      - "/proc:/hostfs/proc:ro"
-      - "/:/hostfs:ro"
-    environment:
-     #  - ELASTIC_USER=elastic
-     #  - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - ELASTIC_HOSTS=http://elasticsearch:9200
-      - KIBANA_HOSTS=http://kibana:5601
-      - LOGSTASH_HOSTS=http://logstash:9600
-    networks:
-      - elastic_network
+  # metricbeat:
+  #   container_name: metricbeat
+  #   depends_on:
+  #     kibana:
+  #       condition: service_healthy
+  #   image: docker.elastic.co/beats/metricbeat:${ELK_VERSION}
+  #   user: root
+  #   volumes:
+  #     #  - certs:/usr/share/metricbeat/certs
+  #     - metricbeat_data:/usr/share/metricbeat/data
+  #     - "./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  #     - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+  #     - "/proc:/hostfs/proc:ro"
+  #     - "/:/hostfs:ro"
+  #   environment:
+  #    #  - ELASTIC_USER=elastic
+  #    #  - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+  #     - ELASTIC_HOSTS=http://elasticsearch:9200
+  #     - KIBANA_HOSTS=http://kibana:5601
+  #     - LOGSTASH_HOSTS=http://logstash:9600
+  #   networks:
+  #     - elastic_network
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # init-kafka:
   #   image: apache/kafka:$KAFKA_VERSION

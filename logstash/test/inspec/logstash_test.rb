@@ -21,8 +21,10 @@ files = %w[
     config/logstash.yml
     config/pipelines.yml
     config/startup.options
-    pipeline/freeradius_auth_accept.conf
-    pipeline/freeradius_auth_reject.conf
+    pipeline/freeradius_acct_to_kafka.conf
+    pipeline/freeradius_acct_to_es.conf
+    pipeline/freeradius_auth_accept_to_kafka.conf
+    pipeline/freeradius_auth_reject_to_kafka.conf
     pipeline/freeradius_auth_to_es.conf
 ]
 

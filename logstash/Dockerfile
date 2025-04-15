@@ -9,6 +9,8 @@ COPY --chown=logstash:root ./config/log4j2.properties /usr/share/logstash/config
 COPY --chown=logstash:root ./config/startup.options /usr/share/logstash/config/startup.options
 
 # Pipeline configurations
-COPY --chown=logstash:root ./pipeline/freeradius_auth_accept.conf /usr/share/logstash/pipeline/freeradius_auth_accept.conf
-COPY --chown=logstash:root ./pipeline/freeradius_auth_reject.conf /usr/share/logstash/pipeline/freeradius_auth_reject.conf
+COPY --chown=logstash:root ./pipeline/freeradius_auth_accept_to_kafka.conf /usr/share/logstash/pipeline/freeradius_auth_accept_to_kafka.conf
+COPY --chown=logstash:root ./pipeline/freeradius_auth_reject_to_kafka.conf /usr/share/logstash/pipeline/freeradius_auth_reject_to_kafka.conf
 COPY --chown=logstash:root ./pipeline/freeradius_auth_to_es.conf /usr/share/logstash/pipeline/freeradius_auth_to_es.conf
+COPY --chown=logstash:root ./pipeline/freeradius_acct_to_kafka.conf /usr/share/logstash/pipeline/freeradius_acct_to_kafka.conf
+COPY --chown=logstash:root ./pipeline/freeradius_acct_to_es.conf /usr/share/logstash/pipeline/freeradius_acct_to_es.conf
