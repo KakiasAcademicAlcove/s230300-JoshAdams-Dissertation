@@ -33,7 +33,8 @@ chef-client --local-mode --override-runlist "recipe[freeradius::default]"
 radtest testuser password 127.0.0.1 1812 testing123
 
 # Acct
-cd /etc/freeradius && radclient localhost acct testing123 < acct-request-1.txt
+cd /etc/freeradius && radclient localhost acct testing123 < acct-start.txt
+cd /etc/freeradius && radclient localhost acct testing123 < acct-stop.txt
 
 # Git - reset a commit
 git reset HEAD^

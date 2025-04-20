@@ -114,13 +114,36 @@ services:
       timeout: 10s
       retries: 120
 
+  # kafka-setup:
+  #   image: apache/kafka:${KAFKA_VERSION}
+  #   container_name: kafka-setup
+  #   depends_on:
+  #     kafka-1:
+  #       condition: service_healthy
+  #     kafka-2:
+  #       condition: service_healthy
+  #     kafka-3:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./kafka/setup:/kafka_setup
+  #   networks:
+  #     - kafka_network
+  #   entrypoint: ["/bin/sh", "-c"]
+  #   command: >
+  #     "
+  #     chmod +x /kafka_setup/create_topics.sh &&
+  #     /kafka_setup/create_topics.sh
+  #     "
+  #   profiles:
+  #     - setup
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
     container_name: elasticsearch
     environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=${ELASTICSEARCH_XPACK_SECURITY_ENABLED}
+      - discovery.type=${ELASTICSEARCH_DISCOVERY_TYPE}
+      - ES_JAVA_OPTS=${ELASTICSEARCH_JAVA_OPTS}
     ports:
       - "9200:9200"
     volumes:
@@ -224,7 +247,7 @@ services:
       - "1812:1812/udp"
       - "1813:1813/udp"
     networks:
-      - "kafka_network"
+      - kafka_network
     depends_on:
       logstash:
         condition:
@@ -266,26 +289,6 @@ services:
 
 
 
-
-  # init-kafka:
-  #   image: apache/kafka:$KAFKA_VERSION
-  #   container_name: init-kafka
-  #   depends_on:
-  #     - kafka-1
-  #     - kafka-2
-  #   entrypoint: [ '/bin/sh', '-c' ]
-  #   command: |
-  #     "
-  #     # Block until Kafka is reachable
-  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --list
-      
-  #     echo -e 'Creating Kafka topics...'
-  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --create --if-not-exists --topic freeradius_auth_accept --replication-factor 1 --partitions 1
-  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092 --create --if-not-exists --topic freeradius_auth_reject --replication-factor 1 --partitions 1
-      
-  #     echo -e 'Successfully created Kafka topics:'
-  #     ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:19092  --list
-  #     "
 
   # filebeat:
   #   image: docker.elastic.co/beats/filebeat:$ELK_VERSION
