@@ -1,7 +1,7 @@
 ## Project details
 ## Install dependencies
 ## Build project
-docker-compose up -d --build
+docker compose --profile setup up --build -d
 
 # Useful resources
 https://hub.docker.com/r/apache/kafka
@@ -22,4 +22,4 @@ docker compose up -d
 docker compose down
 
 # Destroy everything:
-docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
+docker compose -f docker-compose.yml -f docker-compose.test.yml --profile setup down -v
