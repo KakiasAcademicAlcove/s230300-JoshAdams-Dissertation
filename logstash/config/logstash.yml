@@ -1,5 +1,8 @@
 http.host: "0.0.0.0"
 xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+xpack.monitoring.enabled: false
+xpack.monitoring.elasticsearch.username: "elastic"
+xpack.monitoring.elasticsearch.password: "ChangeMe"
 # path.data: /usr/share/logstash/data
 # path.logs: /usr/share/logstash/logs
 # path.config: /usr/share/logstash/config - For some reason this uncommented breaks everything

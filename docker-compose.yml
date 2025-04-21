@@ -1,6 +1,10 @@
 version: "3.8"
 
 volumes:
+  elastic-certs:
+    driver: local
+  kafka-certs:
+    driver: local
   freeradius_logs:
   kafka-data-1:
   kafka-data-2:
@@ -15,6 +19,62 @@ networks:
     driver: bridge
 
 services:
+  elastic-setup:
+    container_name: elastic-setup
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    volumes:
+      - elastic-certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: elasticsearch\n"\
+          "    dns:\n"\
+          "      - elasticsearch\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: kibana\n"\
+          "    dns:\n"\
+          "      - kibana\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://elasticsearch:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/elasticsearch/elasticsearch.crt ]"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
   kafka-1:
     image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-1
@@ -138,36 +198,71 @@ services:
   #     - setup
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
     container_name: elasticsearch
     environment:
-      - xpack.security.enabled=${ELASTICSEARCH_XPACK_SECURITY_ENABLED}
-      - discovery.type=${ELASTICSEARCH_DISCOVERY_TYPE}
-      - ES_JAVA_OPTS=${ELASTICSEARCH_JAVA_OPTS}
+      - node.name=elasticsearch
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${ELASTICSEARCH_LICENSE}
     ports:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+      - elastic-certs:/usr/share/elasticsearch/config/certs
       # - ${ELASTICSEARCH_CONFIG_DIR}/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - elastic_network
+    mem_limit: ${ELASTICSEARCH_MEMORY_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    depends_on:
+      elastic-setup:
+        condition: service_healthy
     healthcheck:
-      test: curl -fs http://localhost:9200/_cluster/health || exit 1
+      test:
+       [
+         "CMD-SHELL",
+         "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+       ]
       interval: 10s
       timeout: 10s
       retries: 120
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:${ELK_VERSION}
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
     container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_USERNAME=${KIBANA_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - XPACK_SECURITY_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_REPORTING_ENCRYPTIONKEY=${ENCRYPTION_KEY}
     volumes:
-      - ${KIBANA_CONFIG_DIR}/kibana.yml:/usr/share/kibana/config/kibana.yml
+      # - ${KIBANA_CONFIG_DIR}/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - elastic-certs:/usr/share/kibana/config/certs
     ports:
       - "5601:5601"
     networks:
       - elastic_network
+    mem_limit: ${KIBANA_MEMORY_LIMIT}
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -207,6 +302,7 @@ services:
     container_name: logstash
     volumes:
       - freeradius_logs:/var/log/freeradius:ro
+      - elastic-certs:/usr/share/logstash/certs
       # - logstash_config:/usr/share/logstash/config
     ports:
       - "5044:5044"
@@ -258,10 +354,10 @@ services:
   #   depends_on:
   #     kibana:
   #       condition: service_healthy
-  #   image: docker.elastic.co/beats/metricbeat:${ELK_VERSION}
+  #   image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
   #   user: root
   #   volumes:
-  #     #  - certs:/usr/share/metricbeat/certs
+  #     #  - elastic-certs:/usr/share/metricbeat/certs
   #     - metricbeat_data:/usr/share/metricbeat/data
   #     - "./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
   #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -291,7 +387,7 @@ services:
 
 
   # filebeat:
-  #   image: docker.elastic.co/beats/filebeat:$ELK_VERSION
+  #   image: docker.elastic.co/beats/filebeat:$ELASTIC_VERSION
   #   container_name: filebeat
   #   volumes:
   #     - $FILEBEAT_CONFIG_DIR/filebeat.yml:/usr/share/filebeat/config/filebeat.yml
@@ -300,7 +396,7 @@ services:
   #     - elastic_network
   
   # apm-server:
-  #   image: docker.elastic.co/apm/apm-server:$ELK_VERSION
+  #   image: docker.elastic.co/apm/apm-server:$ELASTIC_VERSION
   #   container_name: apm-server
   #   volumes:
   #     - $APM_CONFIG_DIR/apm-server.yml:/usr/share/apm/config/apm-server.yml
