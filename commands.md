@@ -37,6 +37,9 @@ radtest testuser password 127.0.0.1 1812 testing123
 cd /etc/freeradius && radclient localhost acct testing123 < acct-start.txt
 cd /etc/freeradius && radclient localhost acct testing123 < acct-stop.txt
 
+# Both
+cd /etc/freeradius && ./test_data.sh
+
 # Git - reset a commit
 git reset HEAD^
 
