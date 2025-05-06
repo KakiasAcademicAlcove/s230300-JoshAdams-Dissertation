@@ -138,7 +138,7 @@ services:
   #     - setup
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
     container_name: elasticsearch
     environment:
       - xpack.security.enabled=${ELASTICSEARCH_XPACK_SECURITY_ENABLED}
@@ -158,7 +158,7 @@ services:
       retries: 120
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:${ELK_VERSION}
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
@@ -206,7 +206,7 @@ services:
     build: ./logstash
     container_name: logstash
     volumes:
-      - freeradius_logs:/var/log/freeradius:ro
+      - freeradius_logs:${FREERADIUS_LOG_DIR}:ro
       # - logstash_config:/usr/share/logstash/config
     ports:
       - "5044:5044"
@@ -258,7 +258,7 @@ services:
   #   depends_on:
   #     kibana:
   #       condition: service_healthy
-  #   image: docker.elastic.co/beats/metricbeat:${ELK_VERSION}
+  #   image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
   #   user: root
   #   volumes:
   #     #  - certs:/usr/share/metricbeat/certs
@@ -291,7 +291,7 @@ services:
 
 
   # filebeat:
-  #   image: docker.elastic.co/beats/filebeat:$ELK_VERSION
+  #   image: docker.elastic.co/beats/filebeat:$ELASTIC_VERSION
   #   container_name: filebeat
   #   volumes:
   #     - $FILEBEAT_CONFIG_DIR/filebeat.yml:/usr/share/filebeat/config/filebeat.yml
@@ -300,7 +300,7 @@ services:
   #     - elastic_network
   
   # apm-server:
-  #   image: docker.elastic.co/apm/apm-server:$ELK_VERSION
+  #   image: docker.elastic.co/apm/apm-server:$ELASTIC_VERSION
   #   container_name: apm-server
   #   volumes:
   #     - $APM_CONFIG_DIR/apm-server.yml:/usr/share/apm/config/apm-server.yml
