@@ -4,6 +4,7 @@ docker volume ls (show volumes)
 docker volume rm <volume> (remove a volume)
 docker volume rm -f <volume>
 docker volume prune -f (clears stale volumes)
+docker system prune --volumes
 docker ps (show running containers)
 docker ps -a (show all containers)
 docker-compose down (delete containers)
