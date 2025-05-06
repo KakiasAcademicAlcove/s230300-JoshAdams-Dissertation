@@ -5,7 +5,7 @@ metricbeat.config.modules:
 metricbeat.modules:
   - module: elasticsearch
     xpack.enabled: true
-    period: 60s
+    period: 300s
     hosts: ${ELASTIC_HOSTS}
   #  ssl.certificate_authorities: "certs/ca/ca.crt"
   #  ssl.certificate: "certs/es01/es01.crt"
@@ -16,13 +16,13 @@ metricbeat.modules:
 
   - module: logstash
     xpack.enabled: true
-    period: 60s
+    period: 300s
     hosts: ${LOGSTASH_HOSTS}
 
   - module: kibana
     metricsets:
       - stats
-    period: 60s
+    period: 300s
     hosts: ${KIBANA_HOSTS}
     #  username: ${ELASTIC_USER}
     #  password: ${ELASTIC_PASSWORD}
@@ -31,16 +31,16 @@ metricbeat.modules:
 
   - module: docker
     metricsets:
-      - "container"
+      # - "container"
       - "cpu"
-      - "diskio"
-      - "healthcheck"
-      - "info"
+      # - "diskio"
+      # - "healthcheck"
+      # - "info"
       #- "image"
       - "memory"
-      - "network"
+      # - "network"
     hosts: ["unix:///var/run/docker.sock"]
-    period: 60s
+    period: 300s
     enabled: true
 
 processors:

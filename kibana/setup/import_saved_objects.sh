@@ -13,12 +13,24 @@ echo "Kibana API is ready. Importing saved objects..."
 curl -X POST "$KIBANA_URL/api/saved_objects/_import?overwrite=true" \
   -H "kbn-xsrf: true" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@/kibana_setup/saved_objects/auth_data.ndjson"
+  -F "file=@/kibana_setup/saved_objects/auth_data_view.ndjson"
 
 # Import acct data view
 curl -X POST "$KIBANA_URL/api/saved_objects/_import?overwrite=true" \
   -H "kbn-xsrf: true" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@/kibana_setup/saved_objects/acct_data.ndjson"
+  -F "file=@/kibana_setup/saved_objects/acct_data_view.ndjson"
+
+# Import container logs (Filebeat) data view
+curl -X POST "$KIBANA_URL/api/saved_objects/_import?overwrite=true" \
+  -H "kbn-xsrf: true" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/kibana_setup/saved_objects/container_logs_data_view.ndjson"
+
+# Import container metrics (Metricbeat) data view
+curl -X POST "$KIBANA_URL/api/saved_objects/_import?overwrite=true" \
+  -H "kbn-xsrf: true" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/kibana_setup/saved_objects/container_metrics_data_view.ndjson"
 
 echo "Import complete. Exiting container."
