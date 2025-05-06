@@ -17,6 +17,8 @@ services:
       - ./kafka/test/inspec:/share/kafka
       - ./kibana/test/inspec:/share/kibana
       - ./logstash/test/inspec:/share/logstash
+      - ./filebeat/test/inspec:/share/filebeat
+      - ./metricbeat/test/inspec:/share/metricbeat
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: >
       sh -c "
@@ -27,7 +29,8 @@ services:
              inspec exec /share/kafka --target docker://kafka-3 --no-create-lockfile &&
              inspec exec /share/elasticsearch --target docker://elasticsearch --no-create-lockfile &&
              inspec exec /share/kibana --target docker://kibana --no-create-lockfile &&
-             echo "All tests passed! Gracefully stopping containers..."
+             inspec exec /share/filebeat --target docker://filebeat --no-create-lockfile &&
+             inspec exec /share/metricbeat --target docker://metricbeat --no-create-lockfile &&
             "
     networks:
       - test_network
