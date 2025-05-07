@@ -1,9 +1,5 @@
 version: "3.8"
 
-networks:
-  test_network:
-    external: false
-
 services:
 
   inspec:
@@ -12,13 +8,13 @@ services:
     depends_on:
       - freeradius
     volumes: 
-      - ./elasticsearch/test/inspec:/share/elasticsearch
-      - ./freeradius/test/inspec:/share/freeradius
-      - ./kafka/test/inspec:/share/kafka
-      - ./kibana/test/inspec:/share/kibana
-      - ./logstash/test/inspec:/share/logstash
-      - ./filebeat/test/inspec:/share/filebeat
-      - ./metricbeat/test/inspec:/share/metricbeat
+      - ${ELASTICSEARCH_INSPEC_DIR}:/share/elasticsearch
+      - ${FREERADIUS_INSPEC_DIR}:/share/freeradius
+      - ${KAFKA_INSPEC_DIR}:/share/kafka
+      - ${KIBANA_INSPEC_DIR}:/share/kibana
+      - ${LOGSTASH_INSPEC_DIR}:/share/logstash
+      - ${FILEBEAT_INSPEC_DIR}:/share/filebeat
+      - ${METRICBEAT_INSPEC_DIR}:/share/metricbeat
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: >
       sh -c "
@@ -30,7 +26,5 @@ services:
              inspec exec /share/elasticsearch --target docker://elasticsearch --no-create-lockfile &&
              inspec exec /share/kibana --target docker://kibana --no-create-lockfile &&
              inspec exec /share/filebeat --target docker://filebeat --no-create-lockfile &&
-             inspec exec /share/metricbeat --target docker://metricbeat --no-create-lockfile &&
+             inspec exec /share/metricbeat --target docker://metricbeat --no-create-lockfile
             "
-    networks:
-      - test_network
