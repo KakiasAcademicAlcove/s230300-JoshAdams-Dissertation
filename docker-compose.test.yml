@@ -1,13 +1,13 @@
 version: "3.8"
 
 services:
-
   inspec:
     image: cincproject/workstation:${CINC_WORKSTATION_INSPEC_VERSION}
     container_name: inspec
     depends_on:
       - freeradius
-    volumes: 
+    volumes:
+      - ./inspec/exec.sh:/inspec/exec.sh
       - ${ELASTICSEARCH_INSPEC_DIR}:/share/elasticsearch
       - ${FREERADIUS_INSPEC_DIR}:/share/freeradius
       - ${KAFKA_INSPEC_DIR}:/share/kafka
@@ -16,15 +16,9 @@ services:
       - ${FILEBEAT_INSPEC_DIR}:/share/filebeat
       - ${METRICBEAT_INSPEC_DIR}:/share/metricbeat
       - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: >
-      sh -c "
-             inspec exec /share/freeradius --target docker://freeradius --no-create-lockfile &&
-             inspec exec /share/logstash --target docker://logstash --no-create-lockfile &&
-             inspec exec /share/kafka --target docker://kafka-1 --no-create-lockfile &&
-             inspec exec /share/kafka --target docker://kafka-2 --no-create-lockfile &&
-             inspec exec /share/kafka --target docker://kafka-3 --no-create-lockfile &&
-             inspec exec /share/elasticsearch --target docker://elasticsearch --no-create-lockfile &&
-             inspec exec /share/kibana --target docker://kibana --no-create-lockfile &&
-             inspec exec /share/filebeat --target docker://filebeat --no-create-lockfile &&
-             inspec exec /share/metricbeat --target docker://metricbeat --no-create-lockfile
-            "
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "
+      chmod +x /inspec/exec.sh &&
+      /inspec/exec.sh
+      "

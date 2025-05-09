@@ -2,15 +2,22 @@ version: "3.8"
 
 volumes:
   freeradius_logs:
+    name: freeradius_logs
   kafka-data-1:
+    name: kafka-data-1
   kafka-data-2:
+    name: kafka-data-2
   kafka-data-3:
+    name: kafka-data-3
   elasticsearch_data:
+    name: elasticsearch_data
 
 networks:
   kafka_network:
+    name: kafka_network
     driver: bridge
   elastic_network:
+    name: elastic_network
     driver: bridge
 
 services:
@@ -34,7 +41,7 @@ services:
       KAFKA_LOG_RETENTION_HOURS: ${KAFKA_NODE_1_LOG_RETENTION_HOURS}
       KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_NODE_1_MESSAGE_MAX_BYTES}
     ports:
-      - "19092:9092"
+      - "${KAFKA_NODE_1_PORT}:9092"
     volumes:
       - kafka-data-1:/var/lib/kafka
       - ${KAFKA_NODE_1_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
@@ -67,7 +74,7 @@ services:
       KAFKA_LOG_RETENTION_HOURS: ${KAFKA_NODE_2_LOG_RETENTION_HOURS}
       KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_NODE_2_MESSAGE_MAX_BYTES}
     ports:
-      - "29092:9092"
+      - "${KAFKA_NODE_2_PORT}:9092"
     volumes:
       - kafka-data-2:/var/lib/kafka
       - ${KAFKA_NODE_2_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
@@ -100,7 +107,7 @@ services:
       KAFKA_LOG_RETENTION_HOURS: ${KAFKA_NODE_3_LOG_RETENTION_HOURS}
       KAFKA_MESSAGE_MAX_BYTES: ${KAFKA_NODE_3_MESSAGE_MAX_BYTES}
     ports:
-      - "39092:9092"
+      - "${KAFKA_NODE_3_PORT}:9092"
     volumes:
       - kafka-data-3:/var/lib/kafka
       - ${KAFKA_NODE_3_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
@@ -119,9 +126,9 @@ services:
     environment:
       - xpack.security.enabled=${ELASTICSEARCH_XPACK_SECURITY_ENABLED}
       - discovery.type=${ELASTICSEARCH_DISCOVERY_TYPE}
-      - ES_JAVA_OPTS=${ELASTICSEARCH_JAVA_OPTS}
+      # - ES_JAVA_OPTS=${ELASTICSEARCH_JAVA_OPTS}
     ports:
-      - "9200:9200"
+      - "${ELASTICSEARCH_PORT}:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
       # - ${ELASTICSEARCH_CONFIG_DIR}/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -137,11 +144,11 @@ services:
     image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
     container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST}
     volumes:
       - ${KIBANA_CONFIG_DIR}/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
-      - "5601:5601"
+      - "${KIBANA_PORT}:5601"
     networks:
       - elastic_network
     depends_on:
@@ -175,8 +182,8 @@ services:
         condition: service_healthy
     networks:
       - elastic_network
-    profiles:
-      - setup
+    # profiles:
+    #   - setup
 
   logstash:
     build: ./logstash

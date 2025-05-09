@@ -1,7 +1,0 @@
-default["freeradius"]["config_dir"]             = "/configs/freeradius"
-default["freeradius"]["version"]                = "3.0"
-default["freeradius"]["path"]                   = "/etc/freeradius"
-default["freeradius"]["user"]["name"]           = "freerad"
-default["freeradius"]["group"]["name"]          = "freerad"
-default["freeradius"]["user"]["id"]             = "101"
-default["freeradius"]["group"]["id"]            = "101"
