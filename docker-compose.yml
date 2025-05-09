@@ -101,11 +101,11 @@ services:
      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
      - xpack.security.transport.ssl.verification_mode=certificate
      - xpack.license.self_generated.type=${ELASTICSEARCH_LICENSE}
-   mem_limit: ${ELASTICSEARCH_MEMORY_LIMIT}
-   ulimits:
-     memlock:
-       soft: -1
-       hard: -1
+  #  mem_limit: ${ELASTICSEARCH_MEMORY_LIMIT}
+  #  ulimits:
+  #    memlock:
+  #      soft: -1
+  #      hard: -1
    healthcheck:
      test:
        [
@@ -140,7 +140,7 @@ services:
      - XPACK_REPORTING_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
    networks:
     - elastic_network
-   mem_limit: ${KIBANA_MEMORY_LIMIT}
+  #  mem_limit: ${KIBANA_MEMORY_LIMIT}
    healthcheck:
     test:
       [
@@ -280,16 +280,6 @@ services:
       - setup
 
   logstash:
-    build: ./logstash
-    container_name: logstash
-    volumes:
-      - freeradius_logs:${FREERADIUS_LOG_DIR}:ro
-      # - logstash_config:/usr/share/logstash/config
-    ports:
-      - "5044:5044"
-    networks:
-      - kafka_network
-      - elastic_network
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -299,6 +289,24 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
+    build: ./logstash
+    container_name: logstash
+    labels:
+      co.elastic.logs/module: logstash
+    volumes:
+      - certs:/usr/share/logstash/certs
+      - freeradius_logs:${FREERADIUS_LOG_DIR}:ro
+      - "./logstash/ingest_data/:/usr/share/logstash/ingest_data/"
+      # - logstash_config:/usr/share/logstash/config
+    environment:
+      - ELASTIC_USER=${ELASTIC_USER}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=${ELASTICSEARCH_HOST}
+    ports:
+      - "${LOGSTASH_PORT}:5044"
+    networks:
+      - kafka_network
+      - elastic_network
     healthcheck:
       test: curl -fs http://localhost:9600 || exit 1
       interval: 10s
@@ -313,16 +321,16 @@ services:
     image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
     user: root
     volumes:
-      #  - certs:/usr/share/metricbeat/certs
-      # - metricbeat_data:/usr/share/metricbeat/data
+      - certs:/usr/share/metricbeat/certs
+      - metricbeat_data:/usr/share/metricbeat/data
       - "./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
       - "/proc:/hostfs/proc:ro"
       - "/:/hostfs:ro"
     environment:
-      #  - ELASTIC_USER=elastic
-      #  - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USER=${ELASTIC_USER}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=${ELASTICSEARCH_HOST}
       - KIBANA_HOSTS=${KIBANA_HOST}
       - LOGSTASH_HOSTS=${LOGSTASH_HOST}
@@ -337,14 +345,15 @@ services:
     image: docker.elastic.co/beats/filebeat:${ELASTIC_VERSION}
     user: root
     volumes:
-      # - certs:/usr/share/filebeat/certs
-      # - filebeat_data:/usr/share/filebeat/data
+      - certs:/usr/share/filebeat/certs
+      - filebeat_data:/usr/share/filebeat/data
+      - "./filebeat/ingest_data/:/usr/share/filebeat/ingest_data/"
       - "./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
       - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
-      # - ELASTIC_USER=elastic
-      # - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USER=${ELASTIC_USER}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=${ELASTICSEARCH_HOST}
       - KIBANA_HOSTS=${KIBANA_HOST}
       - LOGSTASH_HOSTS=${LOGSTASH_HOST}

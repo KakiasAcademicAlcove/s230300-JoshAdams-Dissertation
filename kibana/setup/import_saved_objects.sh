@@ -40,5 +40,3 @@ for file in auth_data_view.ndjson acct_data_view.ndjson container_logs_data_view
 done
 
 echo "Import complete. Exiting container."
-
-# sleep infinity;
