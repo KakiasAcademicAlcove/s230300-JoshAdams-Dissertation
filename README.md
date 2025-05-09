@@ -28,3 +28,10 @@ docker compose down
 
 # Destroy everything:
 docker compose -f docker-compose.yml -f docker-compose.test.yml --profile setup down -v
+
+## Access Kibana
+http://localhost:5601
+
+# Default credentials
+Username: elastic
+Password: changeme
