@@ -3,14 +3,31 @@ version: "3.8"
 volumes:
   freeradius_logs:
     name: freeradius_logs
+    driver: local
   kafka-data-1:
     name: kafka-data-1
+    driver: local
   kafka-data-2:
     name: kafka-data-2
+    driver: local
   kafka-data-3:
     name: kafka-data-3
+    driver: local
   elasticsearch_data:
     name: elasticsearch_data
+    driver: local
+  kibana_data:
+    name: kibana_data
+    driver: local
+  logstash_data:
+    name: logstash_data
+    driver: local
+  filebeat_data:
+    name: logstash_data
+    driver: local
+  metricbeat_data:
+    name: logstash_data
+    driver: local
 
 networks:
   kafka_network:
@@ -123,10 +140,11 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
     container_name: elasticsearch
+    labels:
+      co.elastic.logs/module: elasticsearch
     environment:
       - xpack.security.enabled=${ELASTICSEARCH_XPACK_SECURITY_ENABLED}
       - discovery.type=${ELASTICSEARCH_DISCOVERY_TYPE}
-      # - ES_JAVA_OPTS=${ELASTICSEARCH_JAVA_OPTS}
     ports:
       - "${ELASTICSEARCH_PORT}:9200"
     volumes:
@@ -143,6 +161,8 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
     container_name: kibana
+    labels:
+      co.elastic.logs/module: kibana
     environment:
       - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST}
     volumes:
@@ -169,7 +189,7 @@ services:
     container_name: kibana-setup
     user: root
     volumes:
-      - ./kibana/setup:/kibana_setup
+      - ${KIBANA_SETUP_DIR}:/kibana_setup
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "
@@ -188,11 +208,15 @@ services:
   logstash:
     build: ./logstash
     container_name: logstash
+    labels:
+      co.elastic.logs/module: logstash
     volumes:
+      - logstash_data:/usr/share/logstash/data
+      - "${LOGSTASH_INGEST_DATA_DIR}:/usr/share/logstash/ingest_data/"
       - freeradius_logs:${FREERADIUS_LOG_DIR}:ro
       # - logstash_config:/usr/share/logstash/config
     ports:
-      - "5044:5044"
+      - "${LOGSTASH_PORT}:5044"
     networks:
       - kafka_network
       - elastic_network
@@ -219,9 +243,8 @@ services:
     image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
     user: root
     volumes:
-      #  - certs:/usr/share/metricbeat/certs
-      # - metricbeat_data:/usr/share/metricbeat/data
-      - "./metricbeat/config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - metricbeat_data:/usr/share/metricbeat/data
+      - "${METRICBEAT_CONFIG_DIR}/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
       - "/proc:/hostfs/proc:ro"
@@ -243,9 +266,9 @@ services:
     image: docker.elastic.co/beats/filebeat:${ELASTIC_VERSION}
     user: root
     volumes:
-      # - certs:/usr/share/filebeat/certs
-      # - filebeat_data:/usr/share/filebeat/data
-      - "./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - filebeat_data:/usr/share/filebeat/data
+      - "${FILEBEAT_INGEST_DATA_DIR}:/usr/share/filebeat/ingest_data/"
+      - "${FILEBEAT_CONFIG_DIR}/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
       - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:

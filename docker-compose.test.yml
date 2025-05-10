@@ -6,15 +6,11 @@ services:
     container_name: inspec
     depends_on:
       - freeradius
+    environment:
+      - INSPEC_PROFILES_DIR=${INSPEC_PROFILES_DIR}
     volumes:
-      - ./inspec/exec.sh:/inspec/exec.sh
-      - ${ELASTICSEARCH_INSPEC_DIR}:/share/elasticsearch
-      - ${FREERADIUS_INSPEC_DIR}:/share/freeradius
-      - ${KAFKA_INSPEC_DIR}:/share/kafka
-      - ${KIBANA_INSPEC_DIR}:/share/kibana
-      - ${LOGSTASH_INSPEC_DIR}:/share/logstash
-      - ${FILEBEAT_INSPEC_DIR}:/share/filebeat
-      - ${METRICBEAT_INSPEC_DIR}:/share/metricbeat
+      - ${INSPEC_DIR}/exec.sh:/inspec/exec.sh
+      - ${INSPEC_PROFILES_DIR}:/inspec/profiles
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: ["/bin/sh", "-c"]
     command: >
