@@ -1,8 +1,7 @@
-http.host: "0.0.0.0"
-xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
-# path.data: /usr/share/logstash/data
-# path.logs: /usr/share/logstash/logs
-# path.config: /usr/share/logstash/config - For some reason this uncommented breaks everything
-pipeline.separate_logs: true
-log.level: info
+http.host: 0.0.0.0
 log.format: plain
+log.level: info
+pipeline.separate_logs: true
+xpack.monitoring.elasticsearch.hosts:
+- https://elasticsearch:9200
+xpack.monitoring.enabled: ${xpack.monitoring.enabled}

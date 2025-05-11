@@ -7,12 +7,12 @@ metricbeat.modules:
     xpack.enabled: true
     period: 300s
     hosts: ${ELASTIC_HOSTS}
-  #  ssl.certificate_authorities: "certs/ca/ca.crt"
-  #  ssl.certificate: "certs/es01/es01.crt"
-  #  ssl.key: "certs/es01/es01.key"
-  #  username: ${ELASTIC_USER}
-  #  password: ${ELASTIC_PASSWORD}
-    ssl.enabled: false
+    ssl.certificate_authorities: "/usr/share/metricbeat/certs/ca/ca.crt"
+    ssl.certificate: "/usr/share/metricbeat/certs/elasticsearch/elasticsearch.crt"
+    ssl.key: "/usr/share/metricbeat/certs/elasticsearch/elasticsearch.key"
+    username: elastic
+    password: ChangeMe
+    ssl.enabled: true
 
   - module: logstash
     xpack.enabled: true
@@ -24,10 +24,9 @@ metricbeat.modules:
       - stats
     period: 300s
     hosts: ${KIBANA_HOSTS}
-    #  username: ${ELASTIC_USER}
-    #  password: ${ELASTIC_PASSWORD}
+    username: ${ELASTIC_USER}
+    password: ${ELASTIC_PASSWORD}
     xpack.enabled: true
-    #  xpack.enabled: false
 
   - module: docker
     metricsets:
@@ -49,9 +48,9 @@ processors:
 
 output.elasticsearch:
   hosts: ${ELASTIC_HOSTS}
-  # username: ${ELASTIC_USER}
-  #  password: ${ELASTIC_PASSWORD}
-  #  ssl:
-  #    certificate: "certs/es01/es01.crt"
-  #    certificate_authorities: "certs/ca/ca.crt"
-  #    key: "certs/es01/es01.key"
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+  ssl:
+    certificate: "/usr/share/metricbeat/certs/elasticsearch/elasticsearch.crt"
+    certificate_authorities: "certs/ca/ca.crt"
+    key: "certs/elasticsearch/elasticsearch.key"

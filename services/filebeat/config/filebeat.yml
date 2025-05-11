@@ -7,9 +7,11 @@ filebeat.inputs:
       - add_docker_metadata: ~
 
 output.elasticsearch:
-  hosts: ["http://elasticsearch:9200"]
-  # Optional: if using security
-  # username: "elastic"
-  # password: "changeme"
+  hosts: ["https://elasticsearch:9200"]
+  username: "elastic"
+  password: "ChangeMe"
+  ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca/ca.crt"]
+  ssl.enabled: true
+  ssl.verification_mode: full
 
 logging.level: info
