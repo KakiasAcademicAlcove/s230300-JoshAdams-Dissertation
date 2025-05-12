@@ -178,6 +178,8 @@ services:
       kafka-certs:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
+    hostname: kafka-1
+    user: root
     container_name: kafka-1
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_1_NODE_ID}
@@ -206,7 +208,7 @@ services:
       KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
       KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
     ports:
       - "19092:9092"
       - "19093:9093"
@@ -214,12 +216,13 @@ services:
       - kafka_1_data:/var/lib/kafka
       - kafka-certs:/etc/kafka/secrets
       - ${KAFKA_NODE_1_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
+      - ./services/kafka/log4j.properties:/opt/kafka/config/log4j.properties:ro
     networks:
       # - kafka_network
       - elastic_network
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 --command-config /opt/kafka/config/server.properties || exit 1
       interval: 10s
       timeout: 10s
       retries: 120
@@ -229,6 +232,7 @@ services:
       kafka-certs:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
+    hostname: kafka-2
     container_name: kafka-2
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_2_NODE_ID}
@@ -257,7 +261,7 @@ services:
       KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
       KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
     ports:
       - "29092:9092"
       - "29093:9093"
@@ -280,6 +284,7 @@ services:
       kafka-certs:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
+    hostname: kafka-3
     container_name: kafka-3
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_3_NODE_ID}
@@ -308,7 +313,7 @@ services:
       KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
       KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
     ports:
       - "39092:9092"
       - "39093:9093"
@@ -360,12 +365,12 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
+      # kafka-1:
+      #   condition: service_healthy
+      # kafka-2:
+      #   condition: service_healthy
+      # kafka-3:
+      #   condition: service_healthy
     # build: ./services/logstash
     image: docker.elastic.co/logstash/logstash:${ELASTIC_VERSION}
     container_name: logstash
