@@ -233,6 +233,7 @@ services:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
     hostname: kafka-2
+    user: root
     container_name: kafka-2
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_2_NODE_ID}
@@ -285,6 +286,7 @@ services:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
     hostname: kafka-3
+    user: root
     container_name: kafka-3
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_3_NODE_ID}
