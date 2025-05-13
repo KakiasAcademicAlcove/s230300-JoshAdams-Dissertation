@@ -39,148 +39,195 @@ volumes:
     driver: local
 
 networks:
-  kafka_network:
-    name: kafka_network
-    driver: bridge
-  elastic_network:
-    name: elastic_network
+  poc_network:
+    name: poc_network
     driver: bridge
 
 services:
   kafka-certs:
-    image: lucidworks/keytool-utils:${OPENJDK_VERSION}
+    image: lucidworks/keytool-utils:${KEYTOOL_UTILS_VERSION}
     container_name: kafka-certs
+    hostname: kafka-certs
     user: root
     volumes:
-      - kafka-certs:/certs
-      - ./certs/kafka:/kafka_certs_setup
+      - type: volume
+        source: kafka-certs
+        target: /certs
+      - type: bind
+        source: ./certs/kafka
+        target: /kafka_certs_setup
+    networks:
+      poc_network:
+        aliases:
+          - kafka-certs
     environment:
       - KAFKA_CERT_PASSWORD=${KAFKA_CERT_PASSWORD}
     entrypoint: ["/bin/bash", "-c"]
     command: >
-        "
-        chmod +x /kafka_certs_setup/certs_creation.sh &&
-        /kafka_certs_setup/certs_creation.sh
-        "
-    networks:
-      # - kafka_network
-      - elastic_network
+      "
+      chmod +x /kafka_certs_setup/certs_creation.sh &&
+      /kafka_certs_setup/certs_creation.sh
+      " 
 
   elastic-certs:
-   image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
-   container_name: elastic-certs
-   environment:
-    - ELASTIC_USER=elastic
-    - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-    - KIBANA_PASSWORD=${KIBANA_PASSWORD}
-   volumes:
-     - elastic-certs:/usr/share/elasticsearch/config/certs
-     - ./certs/elastic:/elastic_certs_setup
-   networks:
-    - elastic_network
-   user: "0"
-   entrypoint: ["/bin/bash", "-c"]
-   command: >
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    container_name: elastic-certs
+    hostname: elastic-certs
+    user: "0"
+    volumes:
+      - type: volume
+        source: elastic-certs
+        target: ${ELASTICSEARCH_CERTS_DIR}
+      - type: bind
+        source: ./certs/elastic
+        target: /elastic_certs_setup
+    networks:
+      poc_network:
+        aliases:
+          - elastic-certs
+    environment:
+      - ELASTIC_USER=${ELASTIC_USER}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
       "
       chmod +x /elastic_certs_setup/certs_creation.sh &&
       /elastic_certs_setup/certs_creation.sh
       "
-   healthcheck:
-     test: ["CMD-SHELL", "[ -f config/certs/elasticsearch/elasticsearch.crt ]"]
-     interval: 1s
-     timeout: 5s
-     retries: 120
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/elasticsearch/elasticsearch.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
 
   elasticsearch:
-   depends_on:
+    depends_on:
       elastic-certs:
-       condition: service_healthy
-   image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
-   container_name: elasticsearch
-   labels:
-     co.elastic.logs/module: elasticsearch
-   volumes:
-     - elastic-certs:/usr/share/elasticsearch/config/certs
-     - elasticsearch_data:/usr/share/elasticsearch/data
-   ports:
-     - ${ELASTICSEARCH_PORT}:9200
-   networks:
-    - elastic_network
-   environment:
-     - node.name=elasticsearch
-     - cluster.name=${ELASTICSEARCH_CLUSTER_NAME}
-     - discovery.type=single-node
-     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-     - bootstrap.memory_lock=true
-     - xpack.security.enabled=true
-     - xpack.security.http.ssl.enabled=true
-     - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
-     - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
-     - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-     - xpack.security.transport.ssl.enabled=true
-     - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
-     - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
-     - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-     - xpack.security.transport.ssl.verification_mode=certificate
-     - xpack.license.self_generated.type=${ELASTICSEARCH_LICENSE}
-   mem_limit: ${ELASTICSEARCH_MEMORY_LIMIT}
-   ulimits:
-     memlock:
-       soft: -1
-       hard: -1
-   healthcheck:
-     test:
-       [
-         "CMD-SHELL",
-         "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-       ]
-     interval: 10s
-     timeout: 10s
-     retries: 120
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    labels:
+      co.elastic.logs/module: elasticsearch
+    container_name: elasticsearch
+    hostname: elasticsearch
+    volumes:
+      - type: volume 
+        source: elastic-certs
+        target: ${ELASTICSEARCH_CERTS_DIR}
+      - type: volume
+        source: elasticsearch_data
+        target: ${ELASTICSEARCH_DATA_DIR}
+    networks:
+      poc_network:
+        aliases:
+          - elasticsearch
+    ports:
+      - ${ELASTICSEARCH_PORT}:9200
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=${ELASTICSEARCH_CLUSTER_NAME}
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${ELASTICSEARCH_LICENSE}
+    mem_limit: ${ELASTICSEARCH_MEMORY_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
 
   kibana:
-   depends_on:
-     elasticsearch:
-       condition: service_healthy
-   image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
-   container_name: kibana
-   labels:
-     co.elastic.logs/module: kibana
-   volumes:
-     - elastic-certs:/usr/share/kibana/config/certs
-     - kibana_data:/usr/share/kibana/data
-   ports:
-     - ${KIBANA_PORT}:5601
-   environment:
-     - SERVERNAME=kibana
-     - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
-     - ELASTICSEARCH_USERNAME=kibana_system
-     - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-     - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-     - XPACK_SECURITY_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
-     - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
-     - XPACK_REPORTING_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
-   networks:
-    - elastic_network
-   mem_limit: ${KIBANA_MEMORY_LIMIT}
-   healthcheck:
-    test:
-      [
-        "CMD-SHELL",
-        "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
-      ]
-    interval: 10s
-    timeout: 10s
-    retries: 120
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+    labels:
+      co.elastic.logs/module: kibana
+    container_name: kibana
+    hostname: kibana
+    volumes:
+      - type: volume
+        source: elastic-certs
+        target: ${KIBANA_CERTS_DIR}
+      - type: volume
+        source: kibana_data
+        target: ${KIBANA_DATA_DIR}
+    networks:
+      poc_network:
+        aliases:
+          - kibana
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - XPACK_SECURITY_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
+      - XPACK_REPORTING_ENCRYPTIONKEY=${ELASTIC_ENCRYPTION_KEY}
+    mem_limit: ${KIBANA_MEMORY_LIMIT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
 
   kafka-1:
     depends_on:
       kafka-certs:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
+    container_name: kafka-1
     hostname: kafka-1
     user: root
-    container_name: kafka-1
+    volumes:
+      - type: volume
+        source: kafka_1_data
+        target: ${KAFKA_DATA_DIR}
+      - type: volume
+        source: kafka-certs
+        target: ${KAFKA_CERTS_DIR}
+      - type: bind
+        source: ./certs/kafka/client-1-ssl.properties
+        target: ${KAFKA_CERTS_DIR}/client-ssl.properties
+      - type: bind
+        source: ./services/kafka/config/kafka-1.server.properties
+        target: ${KAFKA_CONFIG_DIR}/server.properties
+      - type: bind
+        source: ./services/kafka/config/log4j.properties
+        target: ${KAFKA_CONFIG_DIR}/log4j.properties
+    networks:
+      poc_network:
+        aliases:
+          - kafka-1
+    ports:
+      - "19092:9092"
+      - "19093:9093"
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_1_NODE_ID}
       KAFKA_PROCESS_ROLES: ${KAFKA_NODE_1_PROCESS_ROLES}
@@ -208,23 +255,12 @@ services:
       KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
       KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
-    ports:
-      - "19092:9092"
-      - "19093:9093"
-    volumes:
-      - kafka_1_data:/var/lib/kafka
-      - kafka-certs:/etc/kafka/secrets
-      - ${KAFKA_NODE_1_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
-      - ./services/kafka/log4j.properties:/opt/kafka/config/log4j.properties:ro
-    networks:
-      # - kafka_network
-      - elastic_network
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 --command-config /opt/kafka/config/server.properties || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 --config /etc/kafka/secrets/client-ssl.properties || exit 1
       interval: 10s
-      timeout: 10s
+      timeout: 30s
       retries: 120
 
   kafka-2:
@@ -232,9 +268,32 @@ services:
       kafka-certs:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
+    container_name: kafka-2
     hostname: kafka-2
     user: root
-    container_name: kafka-2
+    volumes:
+      - type: volume
+        source: kafka_2_data
+        target: ${KAFKA_DATA_DIR} 
+      - type: volume
+        source: kafka-certs
+        target: ${KAFKA_CERTS_DIR}
+      - type: bind
+        source: ./certs/kafka/client-2-ssl.properties
+        target: ${KAFKA_CERTS_DIR}/client-ssl.properties
+      - type: bind
+        source: ./services/kafka/config/kafka-2.server.properties
+        target: ${KAFKA_CONFIG_DIR}/server.properties
+      - type: bind
+        source: ./services/kafka/config/log4j.properties
+        target: ${KAFKA_CONFIG_DIR}/log4j.properties
+    networks:
+      poc_network:
+        aliases:
+          - kafka-2
+    ports:
+      - "29092:9092"
+      - "29093:9093"
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_2_NODE_ID}
       KAFKA_PROCESS_ROLES: ${KAFKA_NODE_2_PROCESS_ROLES}
@@ -262,22 +321,12 @@ services:
       KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
       KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
-    ports:
-      - "29092:9092"
-      - "29093:9093"
-    volumes:
-      - kafka_2_data:/var/lib/kafka
-      - kafka-certs:/etc/kafka/secrets
-      - ${KAFKA_NODE_2_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
-    networks:
-      # - kafka_network
-      - elastic_network
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-2:9092 || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-2:9092 --config /etc/kafka/secrets/client-ssl.properties || exit 1
       interval: 10s
-      timeout: 10s
+      timeout: 30s
       retries: 120
   
   kafka-3:
@@ -285,9 +334,32 @@ services:
       kafka-certs:
         condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
+    container_name: kafka-3
     hostname: kafka-3
     user: root
-    container_name: kafka-3
+    volumes:
+      - type: volume
+        source: kafka_3_data
+        target: ${KAFKA_DATA_DIR} 
+      - type: volume
+        source: kafka-certs
+        target: ${KAFKA_CERTS_DIR}
+      - type: bind
+        source: ./certs/kafka/client-3-ssl.properties
+        target: ${KAFKA_CERTS_DIR}/client-ssl.properties
+      - type: bind
+        source: ./services/kafka/config/kafka-3.server.properties
+        target: ${KAFKA_CONFIG_DIR}/server.properties
+      - type: bind
+        source: ./services/kafka/config/log4j.properties
+        target: ${KAFKA_CONFIG_DIR}/log4j.properties
+    networks:
+      poc_network:
+        aliases:
+          - kafka-3
+    ports:
+      - "39092:9092"
+      - "39093:9093"
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_3_NODE_ID}
       KAFKA_PROCESS_ROLES: ${KAFKA_NODE_3_PROCESS_ROLES}
@@ -315,28 +387,33 @@ services:
       KAFKA_SSL_KEY_CREDENTIALS: ${KAFKA_SSL_KEY_CREDENTIALS}
       KAFKA_SSL_KEYSTORE_CREDENTIALS: ${KAFKA_SSL_KEYSTORE_CREDENTIALS}
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: ${KAFKA_SSL_TRUSTSTORE_CREDENTIALS}
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: "https"
-    ports:
-      - "39092:9092"
-      - "39093:9093"
-    volumes:
-      - kafka_3_data:/var/lib/kafka
-      - kafka-certs:/etc/kafka/secrets
-      - ${KAFKA_NODE_3_CONFIG_DIR}/server.properties:/opt/kafka/config/server.properties
-    networks:
-      # - kafka_network
-      - elastic_network
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-3:9092 || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-3:9092 --config /etc/kafka/secrets/client-ssl.properties || exit 1
       interval: 10s
-      timeout: 10s
+      timeout: 30s
       retries: 120
 
   kibana-setup:
+    depends_on:
+      kibana:
+        condition: service_healthy
     image: curlimages/curl:${CURL_VERSION}
     container_name: kibana-setup
+    hostname: kibana-setup
     user: root
+    volumes:
+      - type: volume
+        source: elastic-certs
+        target: /certs
+      - type: bind
+        source: ./services/kibana/setup
+        target: /kibana_setup
+    networks:
+      poc_network:
+        aliases:
+          - kibana-setup
     environment:
       - ELASTICSEARCH_URL=https://elasticsearch:9200
       - KIBANA_URL=${KIBANA_HOST}
@@ -345,9 +422,6 @@ services:
       - KIBANA_SUPERUSER=super_kibana
       - KIBANA_SUPERUSER_PASSWORD=${KIBANA_SUPERUSER_PASSWORD}
       - SSL_ENABLED=true
-    volumes:
-      - elastic-certs:/certs
-      - ./services/kibana/setup:/kibana_setup
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "
@@ -355,53 +429,65 @@ services:
       chmod +x /kibana_setup/import_saved_objects.sh &&
       /kibana_setup/import_saved_objects.sh
       "
-    depends_on:
-      kibana:
-        condition: service_healthy
-    networks:
-      - elastic_network
-    # profiles:
-    #   - setup
 
   logstash:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      # kafka-1:
-      #   condition: service_healthy
-      # kafka-2:
-      #   condition: service_healthy
-      # kafka-3:
-      #   condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
     # build: ./services/logstash
     image: docker.elastic.co/logstash/logstash:${ELASTIC_VERSION}
-    container_name: logstash
-    user: root 
     labels:
       co.elastic.logs/module: logstash
+    container_name: logstash
+    hostname: logstash
+    user: root 
     volumes:
-      - elastic-certs:/usr/share/logstash/certs
-      - kafka-certs:/usr/share/logstash/certs/kafka
-      - freeradius_logs:${FREERADIUS_LOG_DIR}:ro
-      - "./services/logstash/ingest_data/:/usr/share/logstash/ingest_data/"
-      - "./services/logstash/pipeline/ssl/freeradius_acct_to_es.conf:/usr/share/logstash/pipeline/freeradius_acct_to_es.conf:ro"
-      - "./services/logstash/pipeline/ssl/freeradius_acct_to_kafka.conf:/usr/share/logstash/pipeline/freeradius_acct_to_kafka.conf:ro"
-      - "./services/logstash/pipeline/ssl/freeradius_auth_accept_to_kafka.conf:/usr/share/logstash/pipeline/freeradius_auth_accept_to_kafka.conf:ro"
-      - "./services/logstash/pipeline/ssl/freeradius_auth_reject_to_kafka.conf:/usr/share/logstash/pipeline/freeradius_auth_reject_to_kafka.conf:ro"
-      - "./services/logstash/pipeline/ssl/freeradius_auth_to_es.conf:/usr/share/logstash/pipeline/freeradius_auth_to_es.conf:ro"
-      - "./services/logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro"
+      - type: volume
+        source: elastic-certs
+        target: ${LOGSTASH_CERTS_DIR}
+      - type: volume
+        source: kafka-certs
+        target: ${LOGSTASH_KAFKA_CERTS_DIR}
+      - type: volume
+        source: freeradius_logs
+        target: ${FREERADIUS_LOG_DIR}
+        read_only: true
+      - type: bind
+        source: ./services/logstash/pipelines
+        target: ${LOGSTASH_PIPELINE_DIR}
+        read_only: true
+      - type: bind
+        source: ./services/logstash/config
+        target: ${LOGSTASH_CONFIG_DIR}
+
+      # - "./services/logstash/ingest_data/:/usr/share/logstash/ingest_data/"
+      # - "./services/logstash/pipeline/ssl/freeradius_acct_to_es.conf:/usr/share/logstash/pipeline/freeradius_acct_to_es.conf:ro"
+      # - "./services/logstash/pipeline/ssl/freeradius_acct_to_kafka.conf:/usr/share/logstash/pipeline/freeradius_acct_to_kafka.conf:ro"
+      # - "./services/logstash/pipeline/ssl/freeradius_auth_accept_to_kafka.conf:/usr/share/logstash/pipeline/freeradius_auth_accept_to_kafka.conf:ro"
+      # - "./services/logstash/pipeline/ssl/freeradius_auth_reject_to_kafka.conf:/usr/share/logstash/pipeline/freeradius_auth_reject_to_kafka.conf:ro"
+      # - "./services/logstash/pipeline/ssl/freeradius_auth_to_es.conf:/usr/share/logstash/pipeline/freeradius_auth_to_es.conf:ro"
+      # - "./services/logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro"
+
       # - "./services/logstash/config:/usr/share/logstash/config"
       # - logstash_config:/usr/share/logstash/config
+    networks:
+      poc_network:
+        aliases:
+          - logstash
+    ports:
+      - "${LOGSTASH_PORT}:5044"
     environment:
       - xpack.monitoring.enabled=false
       - ELASTIC_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=https://elasticsearch:9200
-    ports:
-      - "${LOGSTASH_PORT}:5044"
-    networks:
-      - kafka_network
-      - elastic_network
+    mem_limit: ${LOGSTASH_MEMORY_LIMIT}
     healthcheck:
       test: curl -fs http://localhost:9600 || exit 1
       interval: 10s
@@ -409,11 +495,12 @@ services:
       retries: 120
 
   # metricbeat:
-  #   container_name: metricbeat
   #   depends_on:
   #     elasticsearch:
   #       condition: service_healthy
   #   image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
+  #   container_name: metricbeat
+  #   hostname: metricbeat
   #   user: root
   #   volumes:
   #     - elastic-certs:/usr/share/metricbeat/certs
@@ -423,21 +510,24 @@ services:
   #     - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
   #     - "/proc:/hostfs/proc:ro"
   #     - "/:/hostfs:ro"
+  #   networks:
+  #     poc_network:
+  #       aliases:
+  #         - metricbeat
   #   environment:
   #     - ELASTIC_USER=elastic
   #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
   #     - ELASTIC_HOSTS=https://elasticsearch:9200
   #     - KIBANA_HOSTS=${KIBANA_HOST} 
   #     - LOGSTASH_HOSTS=${LOGSTASH_HOST}
-  #   networks:
-  #     - elastic_network
 
   filebeat:
-    container_name: filebeat
     depends_on:
       elasticsearch:
         condition: service_healthy
     image: docker.elastic.co/beats/filebeat:${ELASTIC_VERSION}
+    container_name: filebeat
+    hostname: filebeat
     user: root
     volumes:
       - elastic-certs:/usr/share/filebeat/certs
@@ -446,20 +536,29 @@ services:
       - "./services/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
       - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      poc_network:
+        aliases:
+          - filebeat
     environment:
       - ELASTIC_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=https://elasticsearch:9200
       - KIBANA_HOSTS=${KIBANA_HOST}
       - LOGSTASH_HOSTS=${LOGSTASH_HOST}
-    networks:
-      - elastic_network
 
   freeradius:
+    depends_on:
+      logstash:
+        condition:
+          service_healthy
     build: ./services/freeradius
     container_name: freeradius
+    hostname: freeradius
     volumes:
-      - freeradius_logs:${FREERADIUS_LOG_DIR}
+      - type: volume
+        source: freeradius_logs
+        target: ${FREERADIUS_LOG_DIR}
       - type: bind
         source: ${FREERADIUS_CONFIG_DIR}/radiusd.conf
         target: /etc/freeradius/radiusd.conf
@@ -469,13 +568,12 @@ services:
       - type: bind
         source: ${FREERADIUS_CONFIG_DIR}/mods-available/detail
         target: /etc/freeradius/mods-available/detail
-    entrypoint: ["freeradius", "-f"]
+    networks:
+      poc_network:
+        aliases:
+          - freeradius
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
-    networks:
-      - kafka_network
-    depends_on:
-      logstash:
-        condition:
-          service_healthy
+    mem_limit: ${FREERADIUS_MEMORY_LIMIT}
+    entrypoint: ["freeradius", "-f"]

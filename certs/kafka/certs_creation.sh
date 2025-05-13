@@ -47,6 +47,7 @@ subjectAltName = @alt_names
 
 [ alt_names ]
 DNS.1 = $NODE
+DNS.2 = localhost
 EOF
 
   # 2.2 Generate private key and CSR
@@ -95,6 +96,19 @@ EOF
 
   echo "Done for $NODE — Keystore and Truststore created"
 done
+
+# 2.7 Create a truststore for Logstash (to validate Kafka broker certs)
+LOGSTASH_TRUSTSTORE="$CERTS_DIR/logstash.truststore.jks"
+echo ""
+echo "[2.7] Creating Logstash truststore"
+keytool -import -trustcacerts \
+  -alias KafkaCA \
+  -file "$CA_CRT" \
+  -keystore "$LOGSTASH_TRUSTSTORE" \
+  -storepass "$TRUSTSTORE_PASSWORD" \
+  -noprompt
+
+echo "Logstash truststore created at: $LOGSTASH_TRUSTSTORE"
 
 # 3. Write credentials for access
 echo "Writing shared credential files..."
