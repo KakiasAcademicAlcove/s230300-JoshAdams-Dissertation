@@ -560,13 +560,13 @@ services:
         source: freeradius_logs
         target: ${FREERADIUS_LOG_DIR}
       - type: bind
-        source: ${FREERADIUS_CONFIG_DIR}/radiusd.conf
+        source: ./services/freeradius/config/radiusd.conf
         target: /etc/freeradius/radiusd.conf
       - type: bind
-        source: ${FREERADIUS_CONFIG_DIR}/users
+        source: ./services/freeradius/config/users
         target: /etc/freeradius/users
       - type: bind
-        source: ${FREERADIUS_CONFIG_DIR}/mods-available/detail
+        source: ./services/freeradius/config/mods-available/detail
         target: /etc/freeradius/mods-available/detail
     networks:
       poc_network:
