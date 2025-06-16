@@ -6,11 +6,9 @@ services:
     container_name: inspec
     depends_on:
       - freeradius
-    environment:
-      - INSPEC_PROFILES_DIR=${INSPEC_PROFILES_DIR}
     volumes:
-      - ${INSPEC_DIR}/exec.sh:/inspec/exec.sh
-      - ${INSPEC_PROFILES_DIR}:/inspec/profiles
+      - ./inspec/exec.sh:/inspec/exec.sh
+      - ./inspec/profiles:/inspec/profiles
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: ["/bin/sh", "-c"]
     command: >

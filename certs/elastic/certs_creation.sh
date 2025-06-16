@@ -1,5 +1,12 @@
 #!/bin/bash
 
+CERT_FLAG="config/certs/.certs_done"
+
+if [ -f "$CERT_FLAG" ]; then
+  echo "Elastic certs already generated. Skipping...";
+  exit 0;
+fi
+
 if [ x${ELASTIC_PASSWORD} == x ]; then
     echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
     exit 1;
@@ -16,22 +23,7 @@ fi;
 
 if [ ! -f config/certs/certs.zip ]; then
     echo "Creating certs";
-    echo -ne \
-    "instances:\n"\
-    "  - name: elasticsearch\n"\
-    "    dns:\n"\
-    "      - elasticsearch\n"\
-    "      - localhost\n"\
-    "    ip:\n"\
-    "      - 127.0.0.1\n"\
-    "  - name: kibana\n"\
-    "    dns:\n"\
-    "      - kibana\n"\
-    "      - localhost\n"\
-    "    ip:\n"\
-    "      - 127.0.0.1\n"\
-    > config/certs/instances.yml;
-    bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+    bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in /elastic_certs_setup/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
     unzip config/certs/certs.zip -d config/certs;
 fi;
 
@@ -44,3 +36,4 @@ until curl -s --cacert config/certs/ca/ca.crt https://elasticsearch:9200 | grep 
 echo "Setting kibana_system password";
 until curl -s -X POST --cacert config/certs/ca/ca.crt -u "${ELASTIC_USER}:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
 echo "All done!";
+touch "$CERT_FLAG"

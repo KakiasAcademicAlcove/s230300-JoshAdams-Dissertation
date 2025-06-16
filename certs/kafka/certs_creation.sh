@@ -2,12 +2,21 @@
 
 set -e
 
+CERTS_DIR="/certs"
+CERT_FLAG="/$CERTS_DIR/.certs_done"
+
+if [ -f "$CERT_FLAG" ]; then
+  echo "Kafka certs already generated. Skipping...";
+  exit 0;
+fi
+
+echo "Generating Kafka certs..."
+
 if [ x${KAFKA_CERT_PASSWORD} == x ]; then
   echo "Set the KAFKA_CERT_PASSWORD environment variable in the .env file";
   exit 1;
 fi;
 
-CERTS_DIR="/certs"
 PASSWORD=$KAFKA_CERT_PASSWORD
 DAYS=365
 NODES=("kafka-1" "kafka-2" "kafka-3")
@@ -124,3 +133,4 @@ chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR"/*.crt
 chmod 640 "$CERTS_DIR"/*.txt
 
 echo "Done. All certs and credentials are ready."
+touch "$CERT_FLAG"
