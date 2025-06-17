@@ -10,8 +10,8 @@ metricbeat.modules:
     ssl.certificate_authorities: "/usr/share/metricbeat/certs/ca/ca.crt"
     ssl.certificate: "/usr/share/metricbeat/certs/elasticsearch/elasticsearch.crt"
     ssl.key: "/usr/share/metricbeat/certs/elasticsearch/elasticsearch.key"
-    username: elastic
-    password: ChangeMe
+    username: ${ELASTIC_USER}
+    password: ${ELASTIC_PASSWORD}
     ssl.enabled: true
 
   - module: logstash
@@ -30,20 +30,14 @@ metricbeat.modules:
 
   - module: docker
     metricsets:
-      # - "container"
+      - "container"
       - "cpu"
-      # - "diskio"
-      # - "healthcheck"
-      # - "info"
-      #- "image"
       - "memory"
-      # - "network"
     hosts: ["unix:///var/run/docker.sock"]
     period: 300s
     enabled: true
 
 processors:
- - add_host_metadata: ~
  - add_docker_metadata: ~
 
 output.elasticsearch:

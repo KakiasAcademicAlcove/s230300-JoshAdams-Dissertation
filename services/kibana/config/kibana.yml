@@ -11,7 +11,7 @@ server.host: "0.0.0.0"
 # Default locale
 i18n.locale: "en"
 
-# Logging (can be adjusted via Chef later)
+# Logging
 logging:
   appenders:
     file:

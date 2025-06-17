@@ -102,6 +102,13 @@ EOF
     -keystore "$CERTS_DIR/$NODE.truststore.jks" \
     -storepass "$TRUSTSTORE_PASSWORD" \
     -noprompt
+  
+  # 2.7 Create SSL client configs
+  cat > $CERTS_DIR/$NODE-ssl.properties <<EOF
+security.protocol=SSL
+ssl.truststore.location=/etc/kafka/secrets/${NODE}.truststore.jks
+ssl.truststore.password=${TRUSTSTORE_PASSWORD}
+EOF
 
   echo "Done for $NODE — Keystore and Truststore created"
 done

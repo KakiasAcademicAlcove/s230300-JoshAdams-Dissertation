@@ -218,9 +218,6 @@ services:
         source: kafka-certs
         target: /etc/kafka/secrets
       - type: bind
-        source: ./certs/kafka/client-1-ssl.properties
-        target: /etc/kafka/secrets/client-ssl.properties
-      - type: bind
         source: ./services/kafka/config/kafka-1.server.properties
         target: /opt/kafka/config/server.properties
       - type: bind
@@ -263,7 +260,7 @@ services:
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 --config /etc/kafka/secrets/client-ssl.properties || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-1:9092 --config /etc/kafka/secrets/kafka-1-ssl.properties || exit 1
       interval: 10s
       timeout: 30s
       retries: 120
@@ -282,9 +279,6 @@ services:
       - type: volume
         source: kafka-certs
         target: /etc/kafka/secrets
-      - type: bind
-        source: ./certs/kafka/client-2-ssl.properties
-        target: /etc/kafka/secrets/client-ssl.properties
       - type: bind
         source: ./services/kafka/config/kafka-2.server.properties
         target: /opt/kafka/config/server.properties
@@ -328,7 +322,7 @@ services:
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-2:9092 --config /etc/kafka/secrets/client-ssl.properties || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-2:9092 --config /etc/kafka/secrets/kafka-2-ssl.properties || exit 1
       interval: 10s
       timeout: 30s
       retries: 120
@@ -347,9 +341,6 @@ services:
       - type: volume
         source: kafka-certs
         target: /etc/kafka/secrets
-      - type: bind
-        source: ./certs/kafka/client-3-ssl.properties
-        target: /etc/kafka/secrets/client-ssl.properties
       - type: bind
         source: ./services/kafka/config/kafka-3.server.properties
         target: /opt/kafka/config/server.properties
@@ -393,7 +384,7 @@ services:
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
     mem_limit: ${KAFKA_MEMORY_LIMIT}
     healthcheck:
-      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-3:9092 --config /etc/kafka/secrets/client-ssl.properties || exit 1
+      test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka-3:9092 --config /etc/kafka/secrets/kafka-3-ssl.properties || exit 1
       interval: 10s
       timeout: 30s
       retries: 120
@@ -428,7 +419,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "
-      apk add --no-cache bash &&
+      apk update && apk add bash &&
       chmod +x /kibana_setup/import_saved_objects.sh &&
       /kibana_setup/import_saved_objects.sh
       "
@@ -467,7 +458,6 @@ services:
       - type: bind
         source: ./services/logstash/config
         target: /usr/share/logstash/config
-      # - logstash_config:/usr/share/logstash/config
     networks:
       poc_network:
         aliases:
@@ -479,6 +469,7 @@ services:
       - ELASTIC_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=https://elasticsearch:9200
+      - KAFKA_TRUSTSTORE_PASSWORD=${KAFKA_SSL_TRUSTSTORE_PASSWORD}
     mem_limit: ${LOGSTASH_MEMORY_LIMIT}
     healthcheck:
       test: curl -fs http://localhost:9600 || exit 1
@@ -486,51 +477,39 @@ services:
       timeout: 10s
       retries: 120
 
-  # metricbeat:
-  #   depends_on:
-  #     elasticsearch:
-  #       condition: service_healthy
-  #   image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
-  #   container_name: metricbeat
-  #   hostname: metricbeat
-  #   user: root
-  #   volumes:
-  #     - type: volume
-  #       source: elastic-certs
-  #       target: /usr/share/metricbeat/certs
-  #     - type: volume
-  #       source: metricbeat_data
-  #       target: /usr/share/metricbeat/data
-  #     - type: bind
-  #       source: ./services/metricbeat/config/metricbeat.yml
-  #       target: /usr/share/metricbeat/metricbeat.yml
-  #       read_only: true
-  #     - type: bind
-  #       source: /var/run/docker.sock
-  #       target: /var/run/docker.sock
-  #       read_only: true
-  #     - type: bind
-  #       source: /sys/fs/cgroup
-  #       target: /hostfs/sys/fs/cgroup
-  #       read_only: true
-  #     - type: bind
-  #       source: /proc
-  #       target: /hostfs/proc
-  #       read_only: true
-  #     - type: bind
-  #       source: /
-  #       target: /hostfs
-  #       read_only: true
-  #   networks:
-  #     poc_network:
-  #       aliases:
-  #         - metricbeat
-  #   environment:
-  #     - ELASTIC_USER=elastic
-  #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-  #     - ELASTIC_HOSTS=https://elasticsearch:9200
-  #     - KIBANA_HOSTS=http://kibana:5601
-  #     - LOGSTASH_HOSTS=http://logstash:9600
+  metricbeat:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
+    container_name: metricbeat
+    hostname: metricbeat
+    user: root
+    volumes:
+      - type: volume
+        source: elastic-certs
+        target: /usr/share/metricbeat/certs
+      - type: volume
+        source: metricbeat_data
+        target: /usr/share/metricbeat/data
+      - type: bind
+        source: ./services/metricbeat/config/metricbeat.yml
+        target: /usr/share/metricbeat/metricbeat.yml
+        read_only: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    networks:
+      poc_network:
+        aliases:
+          - metricbeat
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elasticsearch:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash:9600
 
   filebeat:
     depends_on:
