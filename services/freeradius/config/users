@@ -1,6 +1,22 @@
-testuser   Cleartext-Password := "password"
-           Service-Type = Framed-User,
-           Framed-Protocol = PPP
+bob@user.com            Cleartext-Password := "password123"
+                        Service-Type = Framed-User,
+                        Framed-Protocol = PPP
+
+frank@user.com          Cleartext-Password := "123secret"
+                        Service-Type = Framed-User,
+                        Framed-Protocol = PPP
+
+stevie@user.com         Cleartext-Password := "supersecret1"
+                        Service-Type = Framed-User,
+                        Framed-Protocol = PPP
+
+jake@user.com           Cleartext-Password := "reallysecret234"
+                        Service-Type = Framed-User,
+                        Framed-Protocol = PPP
+
+josh@user.com           Cleartext-Password := "blob789"
+                        Service-Type = Framed-User,
+                        Framed-Protocol = PPP
 
 DEFAULT Framed-Protocol == PPP
         Framed-Protocol = PPP,

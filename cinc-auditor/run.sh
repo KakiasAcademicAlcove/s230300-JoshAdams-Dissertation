@@ -9,13 +9,13 @@ echo 'Running profile for Logstash...'
 cinc-auditor exec /cinc-auditor/profiles/logstash.rb --target docker://logstash --no-create-lockfile
 
 echo 'Running profile for Kafka-1...'
-cinc-auditor exec /cinc-auditor/profiles/kafka.rb --target docker://kafka-1 --no-create-lockfile
+cinc-auditor exec /cinc-auditor/profiles/kafka-1.rb --target docker://kafka-1 --no-create-lockfile
 
 echo 'Running profile for Kafka-2...'
-cinc-auditor exec /cinc-auditor/profiles/kafka.rb --target docker://kafka-2 --no-create-lockfile
+cinc-auditor exec /cinc-auditor/profiles/kafka-2.rb --target docker://kafka-2 --no-create-lockfile
 
 echo 'Running profile for Kafka-3...'
-cinc-auditor exec /cinc-auditor/profiles/kafka.rb --target docker://kafka-3 --no-create-lockfile
+cinc-auditor exec /cinc-auditor/profiles/kafka-3.rb --target docker://kafka-3 --no-create-lockfile
 
 echo 'Running profile for Elasticsearch...'
 cinc-auditor exec /cinc-auditor/profiles/elasticsearch.rb --target docker://elasticsearch --no-create-lockfile

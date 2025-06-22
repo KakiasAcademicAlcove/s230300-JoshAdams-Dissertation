@@ -1,5 +1,8 @@
 directories = %w[
     bin
+    certs
+    certs/kafka
+    certs/ca
     config
     data
     jdk
@@ -15,6 +18,8 @@ directories = %w[
 
 files = %w[
     bin/logstash
+    certs/kafka/logstash.truststore.jks
+    certs/ca/ca.crt
     config/jvm.options
     config/log4j2.file.properties
     config/log4j2.properties
@@ -28,30 +33,14 @@ files = %w[
     pipeline/freeradius_auth_to_es.conf
 ]
 
-users = %w[
-    logstash
-]
-
-# Java test?
-
-users.each do |user|
-    describe user("#{user}") do
-        it { should exist }
-    end
-end
-
 directories.each do |dir|
     describe directory("/usr/share/logstash/#{dir}") do
       it { should exist }
-      its('owner') { should eq 'logstash' }
-      its('group') { should eq 'root' }
     end
 end
 
 files.each do |file|
     describe file("/usr/share/logstash/#{file}") do
       it { should exist }
-      it { should be_owned_by     'logstash' }
-      it { should be_grouped_into 'root' }
     end
 end

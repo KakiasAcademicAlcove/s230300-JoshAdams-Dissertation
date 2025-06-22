@@ -38,11 +38,12 @@ echo "[0/6] CA certificate and key generated."
 
 # 2. Generate certificates for each broker (kafka-1, kafka-2, kafka-3)
 for NODE in "${NODES[@]}"; do
+  mkdir -p "$CERTS_DIR/$NODE"
   echo ""
   echo "---- Generating certs for $NODE ----"
 
   # 2.1 Create OpenSSL config with Subject Alternative Name (SAN) for each broker
-  cat > "$CERTS_DIR/$NODE.cnf" <<EOF
+  cat > "$CERTS_DIR/$NODE/$NODE.cnf" <<EOF
 [ req ]
 distinguished_name = req_distinguished_name
 x509_extensions = v3_req
@@ -61,26 +62,26 @@ EOF
 
   # 2.2 Generate private key and CSR
   openssl req -new -nodes -newkey rsa:2048 \
-    -keyout "$CERTS_DIR/$NODE.key" \
-    -out "$CERTS_DIR/$NODE.csr" \
-    -config "$CERTS_DIR/$NODE.cnf"
+    -keyout "$CERTS_DIR/$NODE/$NODE.key" \
+    -out "$CERTS_DIR/$NODE/$NODE.csr" \
+    -config "$CERTS_DIR/$NODE/$NODE.cnf"
 
   # 2.3 Sign the certificate with the CA
-  openssl x509 -req -in "$CERTS_DIR/$NODE.csr" \
+  openssl x509 -req -in "$CERTS_DIR/$NODE/$NODE.csr" \
     -CA "$CA_CRT" \
     -CAkey "$CA_KEY" \
     -CAcreateserial \
-    -out "$CERTS_DIR/$NODE.crt" \
+    -out "$CERTS_DIR/$NODE/$NODE.crt" \
     -days $DAYS \
-    -extfile "$CERTS_DIR/$NODE.cnf" \
+    -extfile "$CERTS_DIR/$NODE/$NODE.cnf" \
     -extensions v3_req
 
   # 2.4 Create PKCS12 keystore
   openssl pkcs12 -export \
-    -in "$CERTS_DIR/$NODE.crt" \
-    -inkey "$CERTS_DIR/$NODE.key" \
+    -in "$CERTS_DIR/$NODE/$NODE.crt" \
+    -inkey "$CERTS_DIR/$NODE/$NODE.key" \
     -certfile "$CA_CRT" \
-    -out "$CERTS_DIR/$NODE.p12" \
+    -out "$CERTS_DIR/$NODE/$NODE.p12" \
     -name "$NODE-cert" \
     -passout pass:$PASSWORD
 
@@ -88,8 +89,8 @@ EOF
   keytool -importkeystore \
     -deststorepass "$KEYSTORE_PASSWORD" \
     -destkeypass "$KEYSTORE_PASSWORD" \
-    -destkeystore "$CERTS_DIR/$NODE.keystore.jks" \
-    -srckeystore "$CERTS_DIR/$NODE.p12" \
+    -destkeystore "$CERTS_DIR/$NODE/$NODE.keystore.jks" \
+    -srckeystore "$CERTS_DIR/$NODE/$NODE.p12" \
     -srcstoretype PKCS12 \
     -srcstorepass "$PASSWORD" \
     -alias "$NODE-cert" \
@@ -99,12 +100,12 @@ EOF
   keytool -import -trustcacerts \
     -alias CARoot \
     -file "$CA_CRT" \
-    -keystore "$CERTS_DIR/$NODE.truststore.jks" \
+    -keystore "$CERTS_DIR/$NODE/$NODE.truststore.jks" \
     -storepass "$TRUSTSTORE_PASSWORD" \
     -noprompt
   
   # 2.7 Create SSL client configs
-  cat > $CERTS_DIR/$NODE-ssl.properties <<EOF
+  cat > $CERTS_DIR/$NODE/$NODE-ssl.properties <<EOF
 security.protocol=SSL
 ssl.truststore.location=/etc/kafka/secrets/${NODE}.truststore.jks
 ssl.truststore.password=${TRUSTSTORE_PASSWORD}
@@ -114,7 +115,8 @@ EOF
 done
 
 # 2.7 Create a truststore for Logstash (to validate Kafka broker certs)
-LOGSTASH_TRUSTSTORE="$CERTS_DIR/logstash.truststore.jks"
+mkdir -p "$CERTS_DIR/logstash"
+LOGSTASH_TRUSTSTORE="$CERTS_DIR/logstash/logstash.truststore.jks"
 echo ""
 echo "[2.7] Creating Logstash truststore"
 keytool -import -trustcacerts \
@@ -135,9 +137,9 @@ echo "$PASSWORD" > "$CERTS_DIR/truststore_credentials.txt"
 # 4. Change permissions for Kafka user (UID 1000)
 echo "Changing permissions for Kafka user (UID 1000)..."
 chown -R 1000:1000 "$CERTS_DIR"
-chmod 640 "$CERTS_DIR"/*.jks "$CERTS_DIR"/*.p12
-chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR"/*.crt
-chmod 640 "$CERTS_DIR"/*.txt
+find "$CERTS_DIR" -type f \( -name "*.jks" -o -name "*.p12" \) -exec chmod 640 {} \;
+find "$CERTS_DIR" -type f -name "*.crt" -exec chmod 644 {} \;
+find "$CERTS_DIR" -type f -name "*.txt" -exec chmod 640 {} \;
 
 echo "Done. All certs and credentials are ready."
 touch "$CERT_FLAG"

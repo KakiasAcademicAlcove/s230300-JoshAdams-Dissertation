@@ -1,6 +1,7 @@
 elasticsearch_directories = %w[
     bin
     config
+    config/certs
     data
     data/_state
     data/indices

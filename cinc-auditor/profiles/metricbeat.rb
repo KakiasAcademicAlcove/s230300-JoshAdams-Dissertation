@@ -1,4 +1,7 @@
 directories = %w[
+    certs
+    certs/ca
+    certs/elasticsearch
     data
     kibana
     logs
@@ -7,6 +10,9 @@ directories = %w[
 ]
 
 files = %w[
+    certs/ca/ca.crt
+    certs/elasticsearch/elasticsearch.crt
+    certs/elasticsearch/elasticsearch.key
     fields.yml
     metricbeat.yml
 ]

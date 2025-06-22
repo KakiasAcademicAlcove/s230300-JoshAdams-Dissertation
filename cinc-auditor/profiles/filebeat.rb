@@ -1,4 +1,6 @@
 directories = %w[
+    certs
+    certs/ca
     data
     kibana
     logs
@@ -7,6 +9,7 @@ directories = %w[
 ]
 
 files = %w[
+    certs/ca/ca.crt
     fields.yml
     filebeat.yml
 ]

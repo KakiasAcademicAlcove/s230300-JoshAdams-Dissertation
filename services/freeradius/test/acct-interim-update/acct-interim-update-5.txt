@@ -1,5 +1,5 @@
-User-Name = "bob"
-Acct-Status-Type = Start
+User-Name = "josh@user.com"
+Acct-Status-Type = Interim-Update
 NAS-IP-Address = 127.0.0.1
 Acct-Session-Id = "session123"
 Framed-IP-Address = 192.168.0.10
