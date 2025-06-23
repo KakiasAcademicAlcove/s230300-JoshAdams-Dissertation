@@ -85,7 +85,7 @@ EOF
     -name "$NODE-cert" \
     -passout pass:$PASSWORD
 
-  # 2.5 Convert PKCS12 to JKS keystore
+  # 2.5 Import PKCS12 to JKS keystore
   keytool -importkeystore \
     -deststorepass "$KEYSTORE_PASSWORD" \
     -destkeypass "$KEYSTORE_PASSWORD" \
@@ -128,13 +128,7 @@ keytool -import -trustcacerts \
 
 echo "Logstash truststore created at: $LOGSTASH_TRUSTSTORE"
 
-# 3. Write credentials for access
-echo "Writing shared credential files..."
-echo "$PASSWORD" > "$CERTS_DIR/key_credentials.txt"
-echo "$PASSWORD" > "$CERTS_DIR/keystore_credentials.txt"
-echo "$PASSWORD" > "$CERTS_DIR/truststore_credentials.txt"
-
-# 4. Change permissions for Kafka user (UID 1000)
+# 3. Change permissions for Kafka user (UID 1000)
 echo "Changing permissions for Kafka user (UID 1000)..."
 chown -R 1000:1000 "$CERTS_DIR"
 find "$CERTS_DIR" -type f \( -name "*.jks" -o -name "*.p12" \) -exec chmod 640 {} \;
