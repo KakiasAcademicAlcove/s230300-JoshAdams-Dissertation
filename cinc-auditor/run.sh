@@ -29,4 +29,4 @@ cinc-auditor exec /cinc-auditor/profiles/filebeat.rb --target docker://filebeat 
 echo 'Running profile for Metricbeat...'
 cinc-auditor exec /cinc-auditor/profiles/metricbeat.rb --target docker://metricbeat --no-create-lockfile
 
-echo 'Finished running profiles. Success!'
+echo 'Finished running profiles.'

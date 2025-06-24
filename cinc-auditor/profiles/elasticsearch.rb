@@ -1,7 +1,6 @@
 elasticsearch_directories = %w[
     bin
     config
-    config/certs
     data
     data/_state
     data/indices
@@ -11,6 +10,7 @@ elasticsearch_directories = %w[
 ]
 
 root_directories = %w[
+    config/certs
     jdk
     lib
     modules

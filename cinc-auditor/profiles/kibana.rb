@@ -38,6 +38,6 @@ files.each do |file|
     describe file("/usr/share/kibana/#{file}") do
       it { should exist }
       it { should be_owned_by     'kibana' }
-      it { should be_grouped_into 'kibana' }
+      it { should be_grouped_into 'root' }
     end
 end
