@@ -73,8 +73,8 @@ services:
         source: kafka-logstash-certs
         target: /certs/logstash
       - type: bind
-        source: ./certs/kafka
-        target: /kafka_certs_setup
+        source: ./kafka/certs_creation.sh
+        target: /kafka_certs_setup/certs_creation.sh
     networks:
       poc_network:
         aliases:
@@ -98,10 +98,10 @@ services:
         source: elastic-certs
         target: /usr/share/elasticsearch/config/certs
       - type: bind
-        source: ./certs/elastic/certs_creation.sh
+        source: ./elasticsearch/certs_creation.sh
         target: /elastic_certs_setup/certs_creation.sh
       - type: bind
-        source: ./certs/elastic/instances.yml
+        source: ./elasticsearch/instances.yml
         target: /elastic_certs_setup/instances.yml
         read_only: true
     networks:
@@ -390,8 +390,12 @@ services:
         source: elastic-certs
         target: /certs
       - type: bind
-        source: ./services/kibana/setup
-        target: /kibana_setup
+        source: ./kibana/import_saved_objects.sh
+        target: /kibana_setup/import_saved_objects.sh
+      - type: bind
+        source: ./kibana/saved_objects
+        target: /kibana_setup/saved_objects
+        read_only: true
     networks:
       poc_network:
         aliases:
@@ -439,11 +443,11 @@ services:
         target: /var/log/freeradius
         read_only: true
       - type: bind
-        source: ./services/logstash/pipelines
+        source: ./logstash/pipeline
         target: /usr/share/logstash/pipeline
         read_only: true
       - type: bind
-        source: ./services/logstash/config
+        source: ./logstash/config
         target: /usr/share/logstash/config
     networks:
       poc_network:
@@ -480,7 +484,7 @@ services:
         source: metricbeat_data
         target: /usr/share/metricbeat/data
       - type: bind
-        source: ./services/metricbeat/config/metricbeat.yml
+        source: ./metricbeat/metricbeat.yml
         target: /usr/share/metricbeat/metricbeat.yml
         read_only: true
       - type: bind
@@ -515,7 +519,7 @@ services:
         source: filebeat_data
         target: /usr/share/filebeat/data
       - type: bind
-        source: ./services/filebeat/config/filebeat.yml
+        source: ./filebeat/filebeat.yml
         target: /usr/share/filebeat/filebeat.yml
         read_only: true
       - type: bind
@@ -551,17 +555,17 @@ services:
         source: freeradius_logs
         target: /var/log/freeradius
       - type: bind
-        source: ./services/freeradius/config/radiusd.conf
+        source: ./freeradius/radiusd.conf
         target: /etc/freeradius/radiusd.conf
       - type: bind
-        source: ./services/freeradius/config/users
+        source: ./freeradius/users
         target: /etc/freeradius/users
       - type: bind
-        source: ./services/freeradius/config/mods-available/detail
+        source: ./freeradius/mods-available/detail
         target: /etc/freeradius/mods-available/detail
       - type: bind
-        source: ./services/freeradius/test
-        target: /etc/freeradius/test
+        source: ./freeradius/test_data
+        target: /etc/freeradius/test_data
     networks:
       poc_network:
         aliases:

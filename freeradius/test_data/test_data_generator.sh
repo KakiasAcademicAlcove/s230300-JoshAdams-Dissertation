@@ -15,16 +15,16 @@ radtest jake@user.com reallysecret345 127.0.0.1 1812 testing123
 radtest josh@user.com blob987 127.0.0.1 1812 testing123
 
 # Acct-Start
-for file in /etc/freeradius/test/acct-start/acct-start-*.txt; do
+for file in /etc/freeradius/test_data/acct-start/acct-start-*.txt; do
     radclient localhost acct testing123 < "$file"
 done
 
 # Acct-Interim-Update
-for file in /etc/freeradius/test/acct-interim-update/acct-interim-update-*.txt; do
+for file in /etc/freeradius/test_data/acct-interim-update/acct-interim-update-*.txt; do
     radclient localhost acct testing123 < "$file"
 done
 
 # Acct-Stop
-for file in /etc/freeradius/test/acct-stop/acct-stop-*.txt; do
+for file in /etc/freeradius/test_data/acct-stop/acct-stop-*.txt; do
     radclient localhost acct testing123 < "$file"
 done

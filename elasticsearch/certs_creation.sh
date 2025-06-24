@@ -49,7 +49,7 @@ until curl -s -X POST \
         https://elasticsearch:9200/_security/user/kibana_system/_password \
         -d "{\"password\":\"${KIBANA_PASSWORD}\"}" \
         | grep -q "^{}"; do sleep 10; done;
-        
+
 echo "All done!";
 
 touch "$CERT_FLAG"
