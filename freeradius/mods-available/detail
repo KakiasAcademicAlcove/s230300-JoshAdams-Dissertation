@@ -1,0 +1,36 @@
+# -*- text -*-
+#
+#  $Id: 665b67797532f70c026dced1aa8e22a83010c8d9 $
+
+# Write a detailed log of all accounting records received.
+#
+detail {
+        filename = ${radacctdir}/detail
+        escape_filenames = no
+        permissions = 0644
+        header = "%t"
+}
+
+# Detail configuration for Auth Accept logs
+detail auth_accept {
+    filename = ${radacctdir}/auth_accept/detail-%Y%m%d
+    permissions = 0600
+    escape_filenames = no
+    header = "%t"
+    # You can add other options like suppressing sensitive data if needed
+    # suppress {
+    #     User-Password
+    # }
+}
+
+# Detail configuration for Auth Reject logs
+detail auth_reject {
+    filename = ${radacctdir}/auth_reject/detail-%Y%m%d
+    permissions = 0600
+    escape_filenames = no
+    header = "%t"
+    # You can add other options like suppressing sensitive data if needed
+    # suppress {
+    #     User-Password
+    # }
+}

@@ -38,14 +38,16 @@ cd /etc/freeradius && radclient localhost acct testing123 < acct-start.txt
 cd /etc/freeradius && radclient localhost acct testing123 < acct-stop.txt
 
 # Both
-cd /etc/freeradius && ./test_data.sh
+cd /etc/freeradius/test && ./test_data_generator.sh
 
 # Git - reset a commit
 git reset HEAD^
 
 # Kafka
 cd /opt/kafka/bin && ./kafka-topics.sh --create --topic freeradius_auth_accept --bootstrap-server kafka-1:9092 --partitions 3 --replication-factor 1
-cd /opt/kafka/bin && ./kafka-console-consumer.sh --bootstrap-server kafka-1:9092 --topic freeradius_auth_accept --from-beginning
+
+cd /opt/kafka/bin && ./kafka-console-consumer.sh --bootstrap-server kafka-1:9092 --topic freeradius_acct --from-beginning --consumer.config /etc/kafka/secrets/kafka-1-ssl.properties
+
 cd /opt/kafka/bin && ./kafka-topics.sh --bootstrap-server kafka-1:9092 --list
 
 # Kibana

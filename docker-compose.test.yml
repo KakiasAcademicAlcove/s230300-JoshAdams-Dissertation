@@ -1,20 +1,19 @@
-version: "3.8"
+version: "2.4"
 
 services:
-  inspec:
-    image: cincproject/workstation:${CINC_WORKSTATION_INSPEC_VERSION}
-    container_name: inspec
+  cinc-auditor:
     depends_on:
       - freeradius
-    environment:
-      - INSPEC_PROFILES_DIR=${INSPEC_PROFILES_DIR}
+    image: cincproject/workstation:${CINC_WORKSTATION_VERSION}
+    container_name: cinc-auditor
+    hostname: cinc-auditor
     volumes:
-      - ${INSPEC_DIR}/exec.sh:/inspec/exec.sh
-      - ${INSPEC_PROFILES_DIR}:/inspec/profiles
+      - ./cinc-auditor/run.sh:/cinc-auditor/run.sh
+      - ./cinc-auditor/profiles:/cinc-auditor/profiles
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "
-      chmod +x /inspec/exec.sh &&
-      /inspec/exec.sh
+      chmod +x /cinc-auditor/run.sh &&
+      /cinc-auditor/run.sh
       "

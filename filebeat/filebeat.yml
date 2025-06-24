@@ -1,0 +1,17 @@
+filebeat.inputs:
+  - type: container
+    enabled: true
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    processors:
+      - add_docker_metadata: ~
+
+output.elasticsearch:
+  hosts: ["${ELASTIC_HOSTS}"]
+  username: "${ELASTIC_USER}"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca/ca.crt"]
+  ssl.enabled: true
+  ssl.verification_mode: full
+
+logging.level: info
