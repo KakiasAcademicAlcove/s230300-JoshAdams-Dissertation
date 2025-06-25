@@ -27,12 +27,12 @@ docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
 
 ## Useful resources
 ### Docker images used in this project
-FreeRADIUS - https://hub.docker.com/r/freeradius/freeradius-server/
-Apache Kafka - https://hub.docker.com/r/apache/kafka
-Elasticsearch - https://www.docker.elastic.co/r/elasticsearch
-Kibana - https://www.docker.elastic.co/r/kibana
-Logstash - https://www.docker.elastic.co/r/logstash
-Beats - https://www.docker.elastic.co/r/beats
-Curl - https://hub.docker.com/r/curlimages/curl
-Keytool-utils - https://hub.docker.com/r/lucidworks/keytool-utils
-CINC Workstation - https://hub.docker.com/u/cincproject
+1. FreeRADIUS - https://hub.docker.com/r/freeradius/freeradius-server/
+2. Apache Kafka - https://hub.docker.com/r/apache/kafka
+3. Elasticsearch - https://www.docker.elastic.co/r/elasticsearch
+4. Kibana - https://www.docker.elastic.co/r/kibana
+5. Logstash - https://www.docker.elastic.co/r/logstash
+6. Beats (Metricbeat and Filebeat) - https://www.docker.elastic.co/r/beats
+7. Curl - https://hub.docker.com/r/curlimages/curl
+8. Keytool-utils - https://hub.docker.com/r/lucidworks/keytool-utils
+9. CINC Workstation - https://hub.docker.com/u/cincproject
