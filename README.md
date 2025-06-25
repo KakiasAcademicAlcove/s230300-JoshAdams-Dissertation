@@ -5,7 +5,7 @@ This project has been built as part of the Dissertation.
 It utilises Dockerised FreeRADIUS, Apache Kafka, and the Elastic Stack all deployed using Docker Compose.
 
 ## Architecture
-<img width="452" alt="image" src="https://github.com/user-attachments/assets/901c56b7-509e-4854-be14-3a3af66b5c90" />
+<img width="1000" alt="image" src="https://github.com/user-attachments/assets/901c56b7-509e-4854-be14-3a3af66b5c90" />
 
 ## Run the project yourself
 ### Dependencies
