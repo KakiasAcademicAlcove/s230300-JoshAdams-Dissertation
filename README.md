@@ -28,6 +28,16 @@ Check output in logs: docker logs -f cinc-auditor
 ### Destroy CINC Auditor test infrastructure
 docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
 
+### Kafka
+#### List topics
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server <node>:9092 --list --command.config /etc/kafka/secrets/<node>-ssl.properties
+
+#### Create topic
+/opt/kafka/bin/kafka-topics.sh --create --topic <topic> --bootstrap-server <node>:9092 --partitions 3 --replication-factor 3 --command.config /etc/kafka/secrets/<node>-ssl.properties
+
+#### Consume data
+/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server <node>:9092 --topic <topic> --from-beginning --consumer.config /etc/kafka/secrets/<node>-ssl.properties
+
 ## Useful resources
 ### Docker images used in this project
 1. FreeRADIUS - https://hub.docker.com/r/freeradius/freeradius-server/
