@@ -40,12 +40,20 @@ docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
 
 ## Useful resources
 ### Docker images used in this project
-1. FreeRADIUS - https://hub.docker.com/r/freeradius/freeradius-server/
-2. Apache Kafka - https://hub.docker.com/r/apache/kafka
-3. Elasticsearch - https://www.docker.elastic.co/r/elasticsearch
-4. Kibana - https://www.docker.elastic.co/r/kibana
-5. Logstash - https://www.docker.elastic.co/r/logstash
-6. Beats (Metricbeat and Filebeat) - https://www.docker.elastic.co/r/beats
-7. Curl - https://hub.docker.com/r/curlimages/curl
-8. Keytool-utils - https://hub.docker.com/r/lucidworks/keytool-utils
-9. CINC Workstation - https://hub.docker.com/u/cincproject
+1. FreeRADIUS (3.2.7) - https://hub.docker.com/r/freeradius/freeradius-server/
+2. Apache Kafka (4.0.0) - https://hub.docker.com/r/apache/kafka
+3. Elasticsearch (8.17.4) - https://www.docker.elastic.co/r/elasticsearch
+4. Kibana (8.17.4) - https://www.docker.elastic.co/r/kibana
+5. Logstash (8.17.4) - https://www.docker.elastic.co/r/logstash
+6. Metricbeat and Filebeat (8.17.4) - https://www.docker.elastic.co/r/beats
+7. Curl (8.13.0) - https://hub.docker.com/r/curlimages/curl
+8. Keytool-utils (5.9.12) - https://hub.docker.com/r/lucidworks/keytool-utils
+9. CINC Workstation (24.12.1073) - https://hub.docker.com/u/cincproject
+
+### More information
+1. FreeRADIUS - https://www.freeradius.org/documentation/
+2. Apache Kafka - https://kafka.apache.org/090/documentation.html
+3. Elasticsearch - https://www.elastic.co/elasticsearch
+4. Kibana - https://www.elastic.co/kibana
+5. Logstash - https://www.elastic.co/logstash
+6. Beats - https://www.elastic.co/beats
