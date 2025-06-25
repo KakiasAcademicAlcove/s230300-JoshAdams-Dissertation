@@ -1,9 +1,9 @@
 User-Name = "bob@user.com"
 Acct-Status-Type = Start
 NAS-IP-Address = 127.0.0.1
-Acct-Session-Id = "session123"
-Framed-IP-Address = 192.168.0.10
+Acct-Session-Id = "session1"
+Framed-IP-Address = 192.168.0.1
 NAS-Port = 0
 NAS-Port-Type = Ethernet
-Calling-Station-Id = "00-14-22-01-23-45"
+Calling-Station-Id = "00-14-22-01-23-01"
 Called-Station-Id = "00-14-22-67-89-ab"

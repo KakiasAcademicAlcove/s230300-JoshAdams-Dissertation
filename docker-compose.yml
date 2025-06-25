@@ -275,7 +275,8 @@ services:
 
   kafka-2:
     depends_on:
-      - kafka-1
+      kafka-security:
+        condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-2
     hostname: kafka-2
@@ -327,7 +328,8 @@ services:
   
   kafka-3:
     depends_on:
-      - kafka-1
+      kafka-security:
+        condition: service_completed_successfully
     image: apache/kafka:${KAFKA_VERSION}
     container_name: kafka-3
     hostname: kafka-3

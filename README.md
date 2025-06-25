@@ -1,6 +1,6 @@
 # A Proof-of-Concept Data Pipeline and Monitoring System based on FreeRADIUS
 ## Project details
-This project has been built as part of the Dissertation.
+This project has been built as part of the dissertation.
 
 It utilises Dockerised FreeRADIUS, Apache Kafka, and the Elastic Stack all deployed using Docker Compose.
 
