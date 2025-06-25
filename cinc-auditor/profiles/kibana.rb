@@ -1,3 +1,4 @@
+# Directories that should exist
 directories = %w[
     bin
     config
@@ -11,21 +12,25 @@ directories = %w[
     x-pack
 ]
 
+# Files that should exist
 files = %w[
     config/kibana.yml
     
 ]
 
+# Users that should exist
 users = %w[
     kibana
 ]
 
+# Check users exist
 users.each do |user|
     describe user("#{user}") do
         it { should exist }
     end
 end
 
+# Check directories exist
 directories.each do |dir|
     describe directory("/usr/share/kibana/#{dir}") do
       it { should exist }
@@ -34,6 +39,7 @@ directories.each do |dir|
     end
 end
 
+# Check files exist
 files.each do |file|
     describe file("/usr/share/kibana/#{file}") do
       it { should exist }

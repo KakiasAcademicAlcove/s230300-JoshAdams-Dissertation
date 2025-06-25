@@ -1,3 +1,4 @@
+# Directories that are expected to be owned by "freerad"
 freerad_owned_directories = %w[
     certs
     policy.d
@@ -5,12 +6,14 @@ freerad_owned_directories = %w[
     sites-enabled
 ]
 
+# Directories that are expected to be owned by "root"
 root_owned_directories = %w[
     mods-available
     mods-config
     mods-enabled
 ]
 
+# Files that are expected to be owned by "root"
 files = %w[
     clients.conf
     dictionary
@@ -25,16 +28,20 @@ files = %w[
     users
 ]
 
+# Users that should exist
 users = %w[
     freerad
+    root
 ]
 
+# Check users exist
 users.each do |user|
     describe user("#{user}") do
         it { should exist }
     end
 end
 
+# Check "freerad" directories exist
 freerad_owned_directories.each do |dir|
     describe directory("/etc/freeradius/#{dir}") do
       it { should exist }
@@ -43,6 +50,7 @@ freerad_owned_directories.each do |dir|
     end
 end
 
+# Check "root" directories exist
 root_owned_directories.each do |dir|
     describe directory("/etc/freeradius/#{dir}") do
       it { should exist }
@@ -51,6 +59,7 @@ root_owned_directories.each do |dir|
     end
 end
 
+# Check files exist
 files.each do |file|
     describe file("/etc/freeradius/#{file}") do
       it { should exist }

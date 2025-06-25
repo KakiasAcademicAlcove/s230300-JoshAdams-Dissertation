@@ -1,7 +1,4 @@
-users = %w[
-    appuser
-]
-
+# Directories that should exist
 directories = %w[
     /opt/kafka/bin
     /opt/kafka/config
@@ -11,6 +8,7 @@ directories = %w[
     /etc/kafka/secrets
 ]
 
+# Files that should exist
 files = %w[
     /opt/kafka/bin/kafka-acls.sh
     /opt/kafka/bin/kafka-broker-api-versions.sh
@@ -68,12 +66,19 @@ files = %w[
     /etc/kafka/secrets/kafka-3-ssl.properties
 ]
 
+# Users that should exist
+users = %w[
+    appuser
+]
+
+# Check users exist
 users.each do |user|
     describe user("#{user}") do
         it { should exist }
     end
 end
 
+# Check directories exist
 directories.each do |dir|
     describe directory("#{dir}") do
       it { should exist }
@@ -82,6 +87,7 @@ directories.each do |dir|
     end
 end
 
+# Check files exist
 files.each do |file|
     describe file("#{file}") do
       it { should exist }

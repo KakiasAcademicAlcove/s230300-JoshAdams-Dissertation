@@ -1,3 +1,4 @@
+# Directories that should exist
 directories = %w[
     certs
     certs/ca
@@ -9,6 +10,7 @@ directories = %w[
     modules.d
 ]
 
+# Files that should exist
 files = %w[
     certs/ca/ca.crt
     certs/elasticsearch/elasticsearch.crt
@@ -17,6 +19,7 @@ files = %w[
     metricbeat.yml
 ]
 
+# Check directories exist
 directories.each do |dir|
     describe directory("/usr/share/metricbeat/#{dir}") do
       it { should exist }
@@ -25,6 +28,7 @@ directories.each do |dir|
     end
 end
 
+# Check files exist
 files.each do |file|
     describe file("/usr/share/metricbeat/#{file}") do
       it { should exist }

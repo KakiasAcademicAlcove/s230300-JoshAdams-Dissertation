@@ -1,3 +1,4 @@
+# Directories that should exist
 directories = %w[
     bin
     certs
@@ -16,6 +17,7 @@ directories = %w[
     x-pack
 ]
 
+# Files that should exist
 files = %w[
     bin/logstash
     certs/kafka/logstash.truststore.jks
@@ -33,12 +35,14 @@ files = %w[
     pipeline/freeradius_auth_to_es.conf
 ]
 
+# Check directories exist
 directories.each do |dir|
     describe directory("/usr/share/logstash/#{dir}") do
       it { should exist }
     end
 end
 
+# Check files exist
 files.each do |file|
     describe file("/usr/share/logstash/#{file}") do
       it { should exist }

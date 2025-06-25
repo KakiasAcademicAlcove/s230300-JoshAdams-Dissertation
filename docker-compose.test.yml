@@ -8,12 +8,18 @@ services:
     container_name: cinc-auditor
     hostname: cinc-auditor
     volumes:
-      - ./cinc-auditor/run.sh:/cinc-auditor/run.sh
-      - ./cinc-auditor/profiles:/cinc-auditor/profiles
-      - /var/run/docker.sock:/var/run/docker.sock
+      - type: bind
+        source: ./cinc-auditor/run_profiles.sh
+        target: /cinc-auditor/run_profiles.sh
+      - type: bind
+        source: ./cinc-auditor/profiles
+        target: /cinc-auditor/profiles
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "
-      chmod +x /cinc-auditor/run.sh &&
-      /cinc-auditor/run.sh
+      chmod +x /cinc-auditor/run_profiles.sh &&
+      /cinc-auditor/run_profiles.sh
       "

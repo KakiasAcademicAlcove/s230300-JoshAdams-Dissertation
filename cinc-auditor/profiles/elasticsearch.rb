@@ -1,3 +1,4 @@
+# Directories that are expected to be owned by "elasticsearch"
 elasticsearch_directories = %w[
     bin
     config
@@ -9,6 +10,7 @@ elasticsearch_directories = %w[
     plugins
 ]
 
+# Directories that are expected to be owned by "root"
 root_directories = %w[
     config/certs
     jdk
@@ -16,6 +18,7 @@ root_directories = %w[
     modules
 ]
 
+# Files that are expected to be owned by "root"
 files = %w[
     config/elasticsearch.yml
     config/jvm.options
@@ -27,16 +30,20 @@ files = %w[
     config/users_roles
 ]
 
+# Users that should exist
 users = %w[
     elasticsearch
+    root
 ]
 
+# Check users exist
 users.each do |user|
     describe user("#{user}") do
         it { should exist }
     end
 end
 
+# Check Elasticsearch directories exist
 elasticsearch_directories.each do |dir|
     describe directory("/usr/share/elasticsearch/#{dir}") do
       it { should exist }
@@ -45,6 +52,7 @@ elasticsearch_directories.each do |dir|
     end
 end
 
+# Check root directories exist
 root_directories.each do |dir|
     describe directory("/usr/share/elasticsearch/#{dir}") do
       it { should exist }
@@ -53,6 +61,7 @@ root_directories.each do |dir|
     end
 end
 
+# Check files exist
 files.each do |file|
     describe file("/usr/share/elasticsearch/#{file}") do
       it { should exist }
