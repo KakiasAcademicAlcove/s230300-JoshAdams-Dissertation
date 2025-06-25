@@ -30,13 +30,13 @@ docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
 
 ### Kafka
 #### List topics
-/opt/kafka/bin/kafka-topics.sh --bootstrap-server <node>:9092 --list --command.config /etc/kafka/secrets/<node>-ssl.properties
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:9092 --list --command.config /etc/kafka/secrets/kafka-1-ssl.properties
 
 #### Create topic
-/opt/kafka/bin/kafka-topics.sh --create --topic <topic> --bootstrap-server <node>:9092 --partitions 3 --replication-factor 3 --command.config /etc/kafka/secrets/<node>-ssl.properties
+/opt/kafka/bin/kafka-topics.sh --create --topic my_new_topic --bootstrap-server kafka-1:9092 --partitions 3 --replication-factor 3 --command.config /etc/kafka/secrets/kafka-1-ssl.properties
 
 #### Consume data
-/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server <node>:9092 --topic <topic> --from-beginning --consumer.config /etc/kafka/secrets/<node>-ssl.properties
+/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka-1:9092 --topic my_topic --from-beginning --consumer.config /etc/kafka/secrets/kafka-1-ssl.properties
 
 ## Useful resources
 ### Docker images used in this project
