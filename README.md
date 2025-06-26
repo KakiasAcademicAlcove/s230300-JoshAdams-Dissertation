@@ -54,7 +54,7 @@ docker exec -it my-container /bin/bash
 8. Keytool-utils (5.9.12) - https://hub.docker.com/r/lucidworks/keytool-utils
 9. CINC Workstation (24.12.1073) - https://hub.docker.com/u/cincproject
 
-### More information
+### Documentation
 1. FreeRADIUS - https://www.freeradius.org/documentation/
 2. Apache Kafka - https://kafka.apache.org/090/documentation.html
 3. Elasticsearch - https://www.elastic.co/elasticsearch
