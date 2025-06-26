@@ -28,9 +28,18 @@ Check output in logs: docker logs -f cinc-auditor
 
 ### Destroy CINC Auditor test infrastructure
 docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
-
 ### Enter a container
 docker exec -it my-container /bin/bash
+
+### FreeRADIUS
+#### Generate some test data
+/etc/freeradius/test_data/test_data_generator.sh
+
+#### Generate a test authentication request with **radtest**
+radtest mytestuser password 127.0.0.1 1812 testing123
+
+#### Generate a test accounting request with **radclient**
+radclient localhost acct testing123 < /etc/freeradius/test_data/my-acct-packet.txt
 
 ### Kafka
 #### List topics
