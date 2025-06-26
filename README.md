@@ -29,6 +29,9 @@ Check output in logs: docker logs -f cinc-auditor
 ### Destroy CINC Auditor test infrastructure
 docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
 
+### Enter a container
+docker exec -it my-container /bin/bash
+
 ### Kafka
 #### List topics
 /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:9092 --list --command.config /etc/kafka/secrets/kafka-1-ssl.properties
