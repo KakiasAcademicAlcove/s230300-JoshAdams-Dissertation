@@ -71,3 +71,4 @@ radclient localhost acct testing123 < /etc/freeradius/test_data/my-acct-packet.t
 - Kibana - https://www.elastic.co/kibana
 - Logstash - https://www.elastic.co/logstash
 - Beats - https://www.elastic.co/beats
+- CINC Workstation - https://cinc.sh/start/workstation/
