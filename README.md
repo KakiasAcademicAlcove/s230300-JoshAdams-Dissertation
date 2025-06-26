@@ -44,20 +44,21 @@ docker exec -it my-container /bin/bash
 
 ## Useful resources
 ### Docker images used in this project
-1. FreeRADIUS (3.2.7) - https://hub.docker.com/r/freeradius/freeradius-server/
-2. Apache Kafka (4.0.0) - https://hub.docker.com/r/apache/kafka
-3. Elasticsearch (8.17.4) - https://www.docker.elastic.co/r/elasticsearch
-4. Kibana (8.17.4) - https://www.docker.elastic.co/r/kibana
-5. Logstash (8.17.4) - https://www.docker.elastic.co/r/logstash
-6. Metricbeat and Filebeat (8.17.4) - https://www.docker.elastic.co/r/beats
-7. Curl (8.13.0) - https://hub.docker.com/r/curlimages/curl
-8. Keytool-utils (5.9.12) - https://hub.docker.com/r/lucidworks/keytool-utils
-9. CINC Workstation (24.12.1073) - https://hub.docker.com/u/cincproject
+- FreeRADIUS (v3.2.7): https://hub.docker.com/r/freeradius/freeradius-server/
+- Apache Kafka (v4.0.0): https://hub.docker.com/r/apache/kafka
+- Elasticsearch (v8.17.4): https://www.docker.elastic.co/r/elasticsearch
+- Kibana (v8.17.4): https://www.docker.elastic.co/r/kibana
+- Logstash (v8.17.4): https://www.docker.elastic.co/r/logstash
+- Metricbeat and Filebeat (v8.17.4): https://www.docker.elastic.co/r/beats
+- Curl (v8.13.0): https://hub.docker.com/r/curlimages/curl
+- Keytool-utils by Lucidworks (v5.9.12): https://hub.docker.com/r/lucidworks/keytool-utils
+- CINC Workstation (v24.12.1073): https://hub.docker.com/u/cincproject
 
 ### Documentation
-1. FreeRADIUS - https://www.freeradius.org/documentation/
-2. Apache Kafka - https://kafka.apache.org/090/documentation.html
-3. Elasticsearch - https://www.elastic.co/elasticsearch
-4. Kibana - https://www.elastic.co/kibana
-5. Logstash - https://www.elastic.co/logstash
-6. Beats - https://www.elastic.co/beats
+- Docker - https://docs.docker.com/
+- FreeRADIUS - https://www.freeradius.org/documentation/
+- Apache Kafka - https://kafka.apache.org/090/documentation.html
+- Elasticsearch - https://www.elastic.co/elasticsearch
+- Kibana - https://www.elastic.co/kibana
+- Logstash - https://www.elastic.co/logstash
+- Beats - https://www.elastic.co/beats
