@@ -12,7 +12,8 @@ It utilises Dockerised FreeRADIUS, Apache Kafka, and the Elastic Stack all deplo
 1. Install Docker (https://www.docker.com/products/docker-desktop/)
 2. Increase Docker resources (in settings) as required
       This project has been developed locally on Mac using **8** CPU cores and **12GB** RAM
-3. That's it! Everything else is handled by Docker internally
+3. Create a file called **.env** in the project root directory based on **.env.example**
+4. That's it! Everything else is handled by Docker internally
  
 ### Build containers
 docker compose up -d
